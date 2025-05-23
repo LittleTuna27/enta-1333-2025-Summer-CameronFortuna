@@ -38,12 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 13
-  m_BakeOnSceneLoad: 1
+  serializedVersion: 12
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -677,7 +677,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 38f7e2d8e36aee34ea1626e31c1db895, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 17.5
+      value: 15.06
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 38f7e2d8e36aee34ea1626e31c1db895, type: 3}
       propertyPath: m_LocalPosition.y
@@ -685,7 +685,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 38f7e2d8e36aee34ea1626e31c1db895, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -32.5
+      value: -34.97
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 38f7e2d8e36aee34ea1626e31c1db895, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1438,12 +1438,8 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
 --- !u!4 &761457191
 Transform:
   m_ObjectHideFlags: 0
@@ -1767,11 +1763,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: f38b9a56b23e4df499eaede1c2276296, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: f38b9a56b23e4df499eaede1c2276296, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20
+      value: -22.890001
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: f38b9a56b23e4df499eaede1c2276296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2284,11 +2280,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: a219455911288e84da9a9c5f55fd95c6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: a219455911288e84da9a9c5f55fd95c6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20.98
+      value: -23.87
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: a219455911288e84da9a9c5f55fd95c6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2330,7 +2326,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 7036859d28e2cb84c9948a1fcf49fe95, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15.81
+      value: 16.88
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 7036859d28e2cb84c9948a1fcf49fe95, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2338,7 +2334,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 7036859d28e2cb84c9948a1fcf49fe95, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -4.45
+      value: -3.33
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 7036859d28e2cb84c9948a1fcf49fe95, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2488,11 +2484,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 5921e45280d702e44ad0fb582ac16d26, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 5921e45280d702e44ad0fb582ac16d26, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -19.98
+      value: -23.386
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 5921e45280d702e44ad0fb582ac16d26, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2762,12 +2758,8 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
 --- !u!4 &1382568954
 Transform:
   m_ObjectHideFlags: 0
@@ -3230,11 +3222,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c73c37430c8ac1e43831ddacfa77c180, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c73c37430c8ac1e43831ddacfa77c180, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20
+      value: -23.45
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c73c37430c8ac1e43831ddacfa77c180, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3632,7 +3624,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1bff8eeac62bd944c9d12ef7cccc745d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 22.03
+      value: 18.97
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1bff8eeac62bd944c9d12ef7cccc745d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3640,7 +3632,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1bff8eeac62bd944c9d12ef7cccc745d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -32.5
+      value: -41.51
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1bff8eeac62bd944c9d12ef7cccc745d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3802,7 +3794,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &2118278526
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3822,7 +3814,6 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
