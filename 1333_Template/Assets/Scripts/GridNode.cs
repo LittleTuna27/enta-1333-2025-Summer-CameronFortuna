@@ -8,17 +8,14 @@ public class GridNode
     public bool walkable;
     public Vector3 WorldPosition;
     public TerrainType terrainType;
-    
-    public int Horizontal_Weight;
-    public int Diagonal_Weight;
 
-    public float GCost;
-    public float HCost;
-    public float FCost;
     public GridNode CameFromNode;
 
-    public void calculateFCost()
-    {
-        FCost = GCost + HCost;
-    }
+    // Computed movement cost (from TerrainType)
+    public int MovementCost => terrainType != null ? terrainType.MovementCost : 1;
+
+    // Optional A* cost values (can be handled externally if preferred)
+    public int GCost;
+    public int HCost;
+    public int FCost => GCost + HCost;
 }

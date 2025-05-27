@@ -69,12 +69,7 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    public GridNode GetNodeFromWorld(Vector3 worldPosition)
-    {
-        int x = Mathf.RoundToInt(worldPosition.x / gridSettings.NodeSize);
-        int y = Mathf.RoundToInt(worldPosition.z / gridSettings.NodeSize);
-        return GetNode(x, y);
-    }
+   
 
     public List<GridNode> GetAllNodes() => allNodes;
 
@@ -89,11 +84,28 @@ public class GridManager : MonoBehaviour
         foreach (var dir in directions)
         {
             Vector3 checkPos = node.WorldPosition + new Vector3(dir.x, 0, dir.z) * gridSettings.NodeSize;
-            GridNode neighbor = GetNodeFromWorld(checkPos);
+            GridNode neighbor = GetNodeFromWorldPosition(checkPos);
             if (neighbor != null) neighbors.Add(neighbor);
         }
 
         return neighbors;
+    }
+    public GridNode GetNodeFromWorldPosition(Vector3 position)
+    {
+        // Determine which axes to use based on grid orientation.
+        int x = gridSettings.UseXZPlane
+            ? Mathf.RoundToInt(position.x / gridSettings.NodeSize)
+            : Mathf.RoundToInt(position.z / gridSettings.NodeSize);
+        int y = gridSettings.UseXZPlane
+            ? Mathf.RoundToInt(position.z / gridSettings.NodeSize)
+            : Mathf.RoundToInt(position.y / gridSettings.NodeSize);
+
+        // Clamp coordinates to grid bounds.
+        x = Mathf.Clamp(x, 0, gridSettings.GridSizeX - 1);
+        y = Mathf.Clamp(y, 0, gridSettings.GridSizeY - 1);
+
+        // Return the node at the clamped coordinates.
+        return GetNode(x, y);
     }
     public GridNode GetNode(Vector2Int position)
     {

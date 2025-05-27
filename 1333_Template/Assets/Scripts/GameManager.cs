@@ -11,14 +11,15 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         gridManager.InitializeGrid();
-        pathFinder.ResetFeild();
+        pathFinder.ResetFeild(); // Triggers A* pathfinding through PathFinder
     }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
             gridManager.InitializeGrid();
-            pathFinder.ResetFeild();
+            pathFinder.ResetFeild(); // Recalculates new path after grid regen
         }
     }
 }
