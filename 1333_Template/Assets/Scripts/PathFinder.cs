@@ -6,14 +6,12 @@ public class PathFinder : MonoBehaviour
 {
     [SerializeField] private GridManager gridManager;
     [SerializeField] private AStartPathfinding pathfindingLogic;
-    [SerializeField] private GameObject startPosPrefab;
     [SerializeField] private GameObject endPosPrefab;
     [SerializeField] private GameObject movingAgent;
-    [SerializeField] private float searchDelay = 0.1f;
+    [SerializeField] private bool useVisualization = true;
 
     private LineRenderer lineRenderer;
     private List<GridNode> pathNodes = new();
-    private GameObject startInstance;
     private GameObject endInstance;
     private GridNode startNode;
     private GridNode endNode;
@@ -25,17 +23,24 @@ public class PathFinder : MonoBehaviour
 
     public void ResetFeild()
     {
-        if (startInstance != null) Destroy(startInstance);
+        CleanupPreviousSearch();
+        StartCoroutine(GeneratePath());
+    }
+
+    private void CleanupPreviousSearch()
+    {
         if (endInstance != null) Destroy(endInstance);
         lineRenderer.positionCount = 0;
 
+        // Clear gizmo visualization data
+        pathfindingLogic.ClearVisualization();
+
+        // Clean up any direct line objects
         foreach (var line in GameObject.FindGameObjectsWithTag("Untagged"))
         {
             if (line.name.Contains("DirectLine"))
                 Destroy(line);
         }
-
-        StartCoroutine(GeneratePath());
     }
 
     private IEnumerator GeneratePath()
@@ -43,23 +48,39 @@ public class PathFinder : MonoBehaviour
         List<GridNode> allNodes = gridManager.GetAllNodes();
         if (allNodes == null || allNodes.Count < 2) yield break;
 
-        startNode = GetRandomWalkableNode();
+      
+        startNode = gridManager.GetNodeFromWorldPosition(movingAgent.transform.position);
         endNode = GetRandomWalkableNode();
+
         while (endNode == startNode)
             endNode = GetRandomWalkableNode();
 
-        startInstance = Instantiate(startPosPrefab, startNode.WorldPosition, Quaternion.identity);
         endInstance = Instantiate(endPosPrefab, endNode.WorldPosition, Quaternion.identity);
-
         Debug.Log($"Start: {startNode.Name}, End: {endNode.Name}");
 
-        pathNodes = FindPath(startNode, endNode);
-
-        foreach (GridNode node in pathNodes)
+        if (useVisualization)
         {
-            yield return new WaitForSeconds(searchDelay);
+            // Use the visualization version
+            yield return StartCoroutine(pathfindingLogic.FindPathWithVisualization(
+                gridManager, startNode, endNode, 1, 1, OnPathFound));
         }
+        else
+        {
+            // Use the immediate version
+            List<GridNode> searchedNodes;
+            pathNodes = pathfindingLogic.FindPath(gridManager, startNode, endNode, 1, 1, out searchedNodes);
+            ProcessFoundPath();
+        }
+    }
 
+    private void OnPathFound(List<GridNode> foundPath, List<GridNode> searchedNodes)
+    {
+        pathNodes = foundPath;
+        ProcessFoundPath();
+    }
+
+    private void ProcessFoundPath()
+    {
         if (pathNodes.Count > 0)
         {
             DrawPath(pathNodes);
@@ -75,18 +96,6 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    private List<GridNode> FindPath(GridNode startNode, GridNode endNode)
-    {
-        if (pathfindingLogic == null)
-        {
-            Debug.LogError("AStartPathfinding reference not set in inspector!");
-            return new List<GridNode>();
-        }
-        Debug.Log("Using A* pathfinding");
-        return pathfindingLogic.FindPath(gridManager, startNode, endNode, 1, 1);
-    }
-
-
     private GridNode GetRandomWalkableNode()
     {
         var nodes = gridManager.GetAllNodes();
@@ -99,7 +108,6 @@ public class PathFinder : MonoBehaviour
     private void DrawPath(List<GridNode> path)
     {
         if (lineRenderer == null) return;
-
         lineRenderer.positionCount = path.Count;
         for (int i = 0; i < path.Count; i++)
         {
@@ -111,7 +119,6 @@ public class PathFinder : MonoBehaviour
     {
         if (lineRenderer == null)
             lineRenderer = gameObject.AddComponent<LineRenderer>();
-
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.black;

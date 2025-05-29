@@ -165,10 +165,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 2138901354}
   pathfindingLogic: {fileID: 2084382706}
-  startPosPrefab: {fileID: 6031024399092380097, guid: 7a70ea5d65d8d10468d993df2688b860, type: 3}
   endPosPrefab: {fileID: 155132, guid: bcc60fdbd3a37b44cbc0cb99db483477, type: 3}
   movingAgent: {fileID: 687394228}
-  searchDelay: 0.1
+  searchDelay: 0.5
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -983,6 +982,7 @@ MonoBehaviour:
   terrainTypes:
   - {fileID: 11400000, guid: b70c3f97805062148b10cb660c3d43fb, type: 2}
   - {fileID: 11400000, guid: d9b484935110eef4781f549b7f532cb8, type: 2}
+  - {fileID: 11400000, guid: c263c4d3f5d37df4585cb61e33c6e454, type: 2}
 --- !u!4 &2138901355
 Transform:
   m_ObjectHideFlags: 0
