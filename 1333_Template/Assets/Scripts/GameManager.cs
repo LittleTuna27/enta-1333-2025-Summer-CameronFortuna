@@ -6,7 +6,8 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private GridManager gridManager;
     [SerializeField] private UnitManager unitManager;
-    [SerializeField] private PathFinder pathFinder;
+    [SerializeField] private PathFinderVisulization pathFinder;
+    [SerializeField] private AStartPathfinding pathfindingLogic;
 
     private void Awake()
     {
@@ -16,8 +17,13 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+
         if (Input.GetKeyDown(KeyCode.R))
         {
+           
+            pathfindingLogic.ClearVisualization();
+
+            StopAllCoroutines();
             gridManager.InitializeGrid();
             pathFinder.ResetFeild(); // Recalculates new path after grid regen
         }
