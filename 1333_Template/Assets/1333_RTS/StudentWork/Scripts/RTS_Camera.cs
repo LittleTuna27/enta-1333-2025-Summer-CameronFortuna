@@ -41,7 +41,7 @@ public class RTS_Camera : MonoBehaviour
         cam.fieldOfView = Mathf.Clamp(cam.fieldOfView - scroll * zoomSpeed, minZoom, maxZoom);
 
         // Rotate the camera with right mouse button drag
-        if (Input.GetMouseButton(1)) // Right mouse button
+        if (Input.GetKeyDown(KeyCode.E)) // Right mouse button
         {
             float rotation = Input.GetAxis("Mouse X") * rotateSpeed * Time.deltaTime;
             transform.Rotate(0, rotation, 0, Space.World);

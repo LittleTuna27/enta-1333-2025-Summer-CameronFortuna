@@ -6,6 +6,8 @@ public class GridManager : MonoBehaviour
 {
     [SerializeField] private GridSettings gridSettings;
     [SerializeField] private TerrainType defaultTerrainType;
+    [SerializeField] private GameObject gridTilePrefab; // assign in Inspector
+
 
     [SerializeField] private List<TerrainType> terrainTypes = new();
     public GridSettings GridSettings => gridSettings;
@@ -39,6 +41,16 @@ public class GridManager : MonoBehaviour
 
                 gridNodes[x, y] = node;
                 allNodes.Add(node);
+
+                // Instantiate physical tile with collider
+                GameObject tile = Instantiate(gridTilePrefab, worldPos, Quaternion.identity);
+                tile.name = node.Name;
+                tile.transform.localScale = Vector3.one * gridSettings.NodeSize * 0.9f;
+                GridTileBehaviour tileScript = tile.GetComponent<GridTileBehaviour>();
+                if (tileScript != null)
+                {
+                    tileScript.Initialize(node);
+                }
             }
         }
 

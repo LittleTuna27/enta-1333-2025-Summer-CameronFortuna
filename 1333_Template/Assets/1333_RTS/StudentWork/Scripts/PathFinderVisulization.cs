@@ -24,7 +24,7 @@ public class PathFinderVisulization : MonoBehaviour
     public void ResetFeild()
     {
         CleanupPreviousSearch();
-        StartCoroutine(GeneratePath());
+       
     }
 
     private void CleanupPreviousSearch()
