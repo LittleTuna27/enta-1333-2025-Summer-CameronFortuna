@@ -16,8 +16,8 @@ public class CurrentTeamArmyManager : MonoBehaviour
 
     public void SpawnUnit(Vector3 position)
     {
-        GameObject go = Instantiate(unitPrefab, position, Quaternion.identity);
-        UnitInstance unit = go.GetComponent<UnitInstance>();
+        GameObject baseUNit = Instantiate(unitPrefab, position, Quaternion.identity);
+        UnitInstance unit = baseUNit.GetComponent<UnitInstance>();
         unit.Initialize(pathfinder, defaultUnitType, gridManager);
         //unit.SetMaterial(teamMaterials[armyID]);
         currentlyActiveUnits.Add(unit);
