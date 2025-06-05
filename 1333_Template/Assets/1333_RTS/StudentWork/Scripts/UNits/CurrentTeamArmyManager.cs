@@ -28,7 +28,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
     {
         foreach (UnitBase unit in currentlyActiveUnits)
         {
-            //unit.PerTick();
+            unit.PerTick(); // drives movement frame-by-frame
         }
     }
 }

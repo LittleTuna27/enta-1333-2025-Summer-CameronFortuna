@@ -1,71 +1,70 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Collections;
 
 public class UnitInstance : UnitBase
 {
-    [SerializeField] private Animator animator; // Changed from Animator to follow camelCase convention
-    [SerializeField] private SkinnedMeshRenderer unitSkin;
-    [SerializeField] private ParticleSystem hurtParticles; // Fixed typo: hurtParicles -> hurtParticles
-    [SerializeField] private PathFinderVisulization pathFinderVisulization;
+    [Header("Component References")]
+    [SerializeField] private Animator animator; // for future animation use
+    [SerializeField] private SkinnedMeshRenderer unitSkin; // for visual selection
+    [SerializeField] private ParticleSystem hurtParticles; // hit feedback
+    [SerializeField] private PathFinderVisulization pathFinderVisulization; // draws the path visually
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
-    protected List<GridNode> currentPath = new();
-    protected int pathIndex = 0;
-    private bool isMoving = false;
+
+    protected List<GridNode> currentPath = new(); // stores the active path
+    protected int pathIndex = 0; // current node index in the path
+
+    private bool isMoving = false; // flag to track if unit is currently moving
+    public UnitState state;
 
     public bool IsMoving => isMoving;
     public List<GridNode> CurrentPath => currentPath;
-    public UnitState state;
 
-    private Coroutine moveRoutine;
-
-    void Start()
+    private void Start()
     {
-        // add the unit to the list so it can be managed by the selection system
+        // register with the global selection manager
         UnitSelectionManager.Instance.allUnitsList.Add(this);
         Debug.Log($"{name} registered to UnitSelectionManager.");
     }
+
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis)
     {
+        // assign dependencies at runtime from army manager
         this.pathfinder = pathfinder;
         base.unitType = unitType;
         gridManager = grid;
-        this.pathFinderVisulization = pathFinderVis; // <-- FIXED
-
-
-
+        this.pathFinderVisulization = pathFinderVis;
     }
-
-    
 
     public override void MoveTo(GridNode targetNode)
     {
-        // check to make sure pathfinding is referenced
+        // validate input
         if (pathfinder == null || targetNode == null)
         {
             Debug.LogWarning($"{name} can't move: missing pathfinder or target node.");
             return;
         }
 
-        Debug.Log($"{name} starting pathfinding to node: {targetNode.Name}");
-        // call a* pathfinding to find the path from the unit to the target node
-        // target node being the one that is right clicked
+        // find the start node from current world position
+        GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
         List<GridNode> searched;
-        if (pathFinderVisulization == null)
-        {
-            Debug.LogError($"{name} has no pathFinderVisulization assigned!");
-            return;
-        }
-       
-        currentPath = pathfinder.FindPath(gridManager,
-            gridManager.GetNodeFromWorldPosition(transform.position),
-            targetNode,
-            out searched);
-        pathFinderVisulization.DrawPath(currentPath);
+
+        // generate A* path for the uunit to follow
+        currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
         Debug.Log($"{name} path found with {currentPath.Count} nodes.");
-        // so long as there is a node in the path list call start path to start moving along the path
+
+        // draws out the current path
+        if (pathFinderVisulization != null)
+        {
+            pathFinderVisulization.DrawPath(currentPath);
+        }
+        else
+        {
+            Debug.LogWarning($"{name} has no pathFinderVisulization assigned!");
+        }
+
+        // if path is valid, start moving
         if (currentPath.Count > 0)
         {
             StartPathMovement(currentPath);
@@ -77,81 +76,63 @@ public class UnitInstance : UnitBase
         }
     }
 
+    public void StartPathMovement(List<GridNode> path)
+    {
+        // reset movement state
+        currentPath = path;
+        pathIndex = 0;
+        isMoving = true;
+
+        Debug.Log($"{name} is beginning movement along path.");
+    }
+
     public override void DoMove()
     {
-        // check to see if they are moving and if there is a path to move along
+        // check if we're still allowed to move
         if (!isMoving || currentPath == null || pathIndex >= currentPath.Count)
         {
             isMoving = false;
             return;
         }
-        // get the current node indexed in the list and move towards said node 
+
+        // move toward the current target node
         Vector3 target = currentPath[pathIndex].WorldPosition + Vector3.up * 0.5f;
         transform.position = Vector3.MoveTowards(transform.position, target, unitType.MoveSpeed * Time.deltaTime);
-        // once you get close enough increase index to move to the next node
+
+        // advance to next node if close enough
         if (Vector3.Distance(transform.position, target) < 0.1f)
         {
             pathIndex++;
             Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
         }
+
+        // stop when done
+        if (pathIndex >= currentPath.Count)
+        {
+            isMoving = false;
+            state = UnitState.Idle;
+            Debug.Log($"{name} reached destination.");
+        }
     }
 
-    public virtual void PerTick()
+    public override void PerTick()
     {
-        // update movement if the unit is currently moving
+        // called by the RTS update manager
         if (state == UnitState.Moving)
             DoMove();
     }
 
     public void Select()
     {
-        // visual feedback for unit selection (commented out for now)
+        // highlight on selection (optional)
         // unitSkin.material.color = Color.cyan;
         Debug.Log($"{name} selected.");
     }
 
     public void Deselect()
     {
-        // reset visual feedback when unit is deselected
+        // remove selection highlight (optional)
         // unitSkin.material.color = Color.white;
         Debug.Log($"{name} deselected.");
-    }
-
-    public void StartPathMovement(List<GridNode> path)
-    {
-        // stop any existing movement routine to prevent conflicts
-        if (moveRoutine != null)
-            StopCoroutine(moveRoutine);
-
-        Debug.Log($"{name} is beginning movement along path.");
-        // start the coroutine to handle smooth movement along the path
-        moveRoutine = StartCoroutine(MoveAlongPath(path));
-    }
-
-    private IEnumerator MoveAlongPath(List<GridNode> path)
-    {
-        isMoving = true;
-
-        // iterate through each node in the path
-        for (int i = 0; i < path.Count; i++)
-        {
-            GridNode node = path[i];
-            // offset the target position slightly above the ground
-            Vector3 target = node.WorldPosition + Vector3.up * 0.5f;
-
-            Debug.Log($"{name} moving to node: {node.Name} at {target}");
-
-            // move towards the target position until close enough
-            while (Vector3.Distance(transform.position, target) > 0.05f)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, target, unitType.MoveSpeed * Time.deltaTime);
-                yield return null; // wait for next frame
-            }
-        }
-
-        Debug.Log($"{name} reached destination.");
-        // movement complete, reset state
-        isMoving = false;
-        state = UnitState.Idle;
     }
 }
