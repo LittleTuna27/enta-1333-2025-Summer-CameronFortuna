@@ -4,38 +4,94 @@ using UnityEngine;
 
 public class PathFinderVisulization : MonoBehaviour
 {
-    [SerializeField] private GridManager gridManager;
-    [SerializeField] private AStartPathfinding pathfindingLogic;
-    [SerializeField] private GameObject endPosPrefab;
-    [SerializeField] private GameObject movingAgent;
-    [SerializeField] private bool useVisualization = true;
+    [SerializeField] private GridManager gridManager; // grid reference used for node access
+    [SerializeField] private AStartPathfinding pathfindingLogic; // A* pathfinding logic
+    [SerializeField] private GameObject endPosPrefab; // prefab to mark the goal node
+    [SerializeField] private bool useVisualization = true; // toggle for search visual feedback
+
+    [Header("Auto Loop Testing")]
+    [SerializeField] private bool autoLoop = false; // toggle for looping search visualization
+    [SerializeField] private float loopDelay = 2.0f; // time between looped searches
+    [SerializeField] private UnitInstance defaultUnit; // unit used for automatic visual testing
 
     private LineRenderer lineRenderer;
-    private List<GridNode> pathNodes = new();
+    private List<GridNode> pathNodes = new(); // holds the current path
     private GameObject endInstance;
     private GridNode startNode;
     private GridNode endNode;
+    private Coroutine loopRoutine;
 
     private void Awake()
     {
+        // set up the line renderer used to draw path lines
         SetupLineRenderer();
+    }
+
+    private void Start()
+    {
+        // if auto loop is on, begin testing paths automatically
+        if (autoLoop && defaultUnit != null)
+        {
+            loopRoutine = StartCoroutine(LoopVisualization());
+        }
+    }
+
+    private void Update()
+    {
+        // press space to run a one-time visualized path search
+        if (Input.GetKeyDown(KeyCode.Space) && defaultUnit != null)
+        {
+            StopAllCoroutines();
+            StartCoroutine(GeneratePath(defaultUnit));
+        }
+
+        // press R to reset visualizer
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ResetFeild();
+        }
+
+        // press L to toggle auto path loop mode
+        if (Input.GetKeyDown(KeyCode.L) && defaultUnit != null)
+        {
+            autoLoop = !autoLoop;
+
+            if (autoLoop)
+                loopRoutine = StartCoroutine(LoopVisualization());
+            else if (loopRoutine != null)
+                StopCoroutine(loopRoutine);
+        }
+    }
+
+    private IEnumerator LoopVisualization()
+    {
+        // run continuous path visualizations between random points
+        while (autoLoop && defaultUnit != null)
+        {
+            yield return StartCoroutine(GeneratePath(defaultUnit));
+            yield return new WaitForSeconds(loopDelay);
+            ResetFeild();
+        }
     }
 
     public void ResetFeild()
     {
+        // cleanup any leftover visuals or state from previous path
         CleanupPreviousSearch();
-       
     }
 
     private void CleanupPreviousSearch()
     {
+        // destroy any previous goal marker
         if (endInstance != null) Destroy(endInstance);
+
+        // clear the path line
         lineRenderer.positionCount = 0;
 
-        //clean the grid of any gizmos used to to visulaize data
+        // clear any pathfinding gizmos
         pathfindingLogic.ClearVisualization();
 
-        //clean  the grid of any direct lines
+        // destroy debug lines in scene (optional extra cleanup)
         foreach (var line in GameObject.FindGameObjectsWithTag("Untagged"))
         {
             if (line.name.Contains("DirectLine"))
@@ -43,67 +99,74 @@ public class PathFinderVisulization : MonoBehaviour
         }
     }
 
-    private IEnumerator GeneratePath()
+    public IEnumerator GeneratePath(UnitInstance unit)
     {
-        //get all nodes on the grid and add them to a list
-        List<GridNode> allNodes = gridManager.GetAllNodes();
-        if (allNodes == null || allNodes.Count < 2) yield break;
+        // make sure unit is valid before continuing
+        if (unit == null)
+        {
+            Debug.LogWarning("Unit is null in GeneratePath.");
+            yield break;
+        }
 
-       //set the start node to the character and randomly select a end node
-        startNode = gridManager.GetNodeFromWorldPosition(movingAgent.transform.position);
+        // get the node under the unit as the starting point
+        startNode = gridManager.GetNodeFromWorldPosition(unit.transform.position);
         endNode = GetRandomWalkableNode();
 
-        //restart if the nodes are the same
+        // ensure end and start are not the same node
         while (endNode == startNode)
             endNode = GetRandomWalkableNode();
 
+        // create marker to visualize the destination node
+        if (endInstance != null) Destroy(endInstance);
         endInstance = Instantiate(endPosPrefab, endNode.WorldPosition, Quaternion.identity);
+
         Debug.Log($"Start: {startNode.Name}, End: {endNode.Name}");
 
+        // run either animated or immediate pathfinding
         if (useVisualization)
         {
-            //start runing the visulaizer for the pathfinding
             yield return StartCoroutine(pathfindingLogic.FindPathWithVisualization(
                 gridManager, startNode, endNode, OnPathFound));
         }
         else
         {
-            //use the immediate version
             List<GridNode> searchedNodes;
             pathNodes = pathfindingLogic.FindPath(gridManager, startNode, endNode, out searchedNodes);
-            ProcessFoundPath();
+            ProcessFoundPath(unit);
         }
     }
 
     private void OnPathFound(List<GridNode> foundPath, List<GridNode> searchedNodes)
     {
-        //add the nodes found for the path to a new list the proceed throught the path
+        // store path and pass it to the unit for movement
         pathNodes = foundPath;
-        ProcessFoundPath();
+
+        if (defaultUnit != null)
+            ProcessFoundPath(defaultUnit);
     }
 
-    private void ProcessFoundPath()
+    private void ProcessFoundPath(UnitInstance unit)
     {
-        //so long as there is nodes in the path move to the next node
+        // if a path was found, draw it and send it to the mover
         if (pathNodes.Count > 0)
         {
             DrawPath(pathNodes);
-            if (movingAgent.TryGetComponent(out PathAgentMover mover))
+
+            if (unit.TryGetComponent(out PathAgentMover mover))
             {
                 mover.StartMoving(pathNodes);
             }
         }
         else
         {
-            //ResetFeild feild if there is no path
             Debug.Log("Path could not be found.");
-            ResetFeild(); // retry
+            ResetFeild(); // clean up if no path was found
         }
     }
 
     private GridNode GetRandomWalkableNode()
     {
-        //randomly sellect one node on the grid so long as it is walkable
+        // randomly choose a node on the grid that is marked as walkable
         var nodes = gridManager.GetAllNodes();
         GridNode node;
         do node = nodes[Random.Range(0, nodes.Count)];
@@ -111,11 +174,12 @@ public class PathFinderVisulization : MonoBehaviour
         return node;
     }
 
-    private void DrawPath(List<GridNode> path)
+    public void DrawPath(List<GridNode> path)
     {
-        //draw a path form one path node to the next in the list
+        // draw a line through each node on the path
         if (lineRenderer == null) return;
         lineRenderer.positionCount = path.Count;
+
         for (int i = 0; i < path.Count; i++)
         {
             lineRenderer.SetPosition(i, path[i].WorldPosition + Vector3.up * 0.2f);
@@ -124,9 +188,10 @@ public class PathFinderVisulization : MonoBehaviour
 
     private void SetupLineRenderer()
     {
-        // set up a line render to use as the pathfinding code
+        // set up the LineRenderer for path drawing
         if (lineRenderer == null)
             lineRenderer = gameObject.AddComponent<LineRenderer>();
+
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.black;

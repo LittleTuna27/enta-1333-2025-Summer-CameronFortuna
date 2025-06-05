@@ -46,11 +46,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef72cd74128cc9d4e9d6e5118178b908, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _unitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
-  Animator: {fileID: 1841962835178228574}
-  _unitSkin: {fileID: 1883083647481841215}
-  _hurtParicles: {fileID: 0}
-  pathMover: {fileID: 0}
+  unitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
+  animator: {fileID: 0}
+  unitSkin: {fileID: 0}
+  hurtParticles: {fileID: 0}
+  pathFinderVisulization: {fileID: 0}
   state: 0
 --- !u!114 &-2934617716918023061
 MonoBehaviour:
@@ -122,18 +122,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 511c566bd068dca4bb9794da5f53052a, type: 3}
---- !u!95 &1841962835178228574 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 9549628, guid: 511c566bd068dca4bb9794da5f53052a, type: 3}
-  m_PrefabInstance: {fileID: 1841962835187645538}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1841962835187588668 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 483934, guid: 511c566bd068dca4bb9794da5f53052a, type: 3}
-  m_PrefabInstance: {fileID: 1841962835187645538}
-  m_PrefabAsset: {fileID: 0}
---- !u!137 &1883083647481841215 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 265142733051804253, guid: 511c566bd068dca4bb9794da5f53052a, type: 3}
   m_PrefabInstance: {fileID: 1841962835187645538}
   m_PrefabAsset: {fileID: 0}

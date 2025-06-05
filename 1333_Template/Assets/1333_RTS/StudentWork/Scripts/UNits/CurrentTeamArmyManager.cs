@@ -11,15 +11,16 @@ public class CurrentTeamArmyManager : MonoBehaviour
     public AStartPathfinding pathfinder;
     public Material[] teamMaterials;
     public UnitType defaultUnitType;
-    public GridManager gridManager; // assign in Inspector
+    public PathFinderVisulization visualizer;
+    public GridManager gridManager;
+
 
 
     public void SpawnUnit(Vector3 position)
     {
-        GameObject baseUNit = Instantiate(unitPrefab, position, Quaternion.identity);
-        UnitInstance unit = baseUNit.GetComponent<UnitInstance>();
-        unit.Initialize(pathfinder, defaultUnitType, gridManager);
-        //unit.SetMaterial(teamMaterials[armyID]);
+        GameObject baseUnit = Instantiate(unitPrefab, position, Quaternion.identity);
+        UnitInstance unit = baseUnit.GetComponent<UnitInstance>();
+        unit.Initialize(pathfinder, defaultUnitType, gridManager, visualizer); // <-- FIXED
         currentlyActiveUnits.Add(unit);
     }
 
