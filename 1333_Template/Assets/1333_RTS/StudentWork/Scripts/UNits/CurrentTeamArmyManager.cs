@@ -23,7 +23,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
             Debug.LogError($"{name}: Cannot spawn unit - unitPrefab is null!");
             return;
         }
-
+        //spawn in the base unit based of the unit type
         GameObject baseUnit = Instantiate(unitPrefab, position, Quaternion.identity);
         UnitInstance unit = baseUnit.GetComponent<UnitInstance>();
 
@@ -37,7 +37,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
         unit.Initialize(pathfinder, defaultUnitType, gridManager, visualizer);
         currentlyActiveUnits.Add(unit);
 
-        // Apply team material if available
+        //apply team material once i get it working
         if (teamMaterials != null && armyID < teamMaterials.Length && teamMaterials[armyID] != null)
         {
             SkinnedMeshRenderer renderer = unit.GetComponent<SkinnedMeshRenderer>();
@@ -54,7 +54,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
 
     void Update()
     {
-        // Update all units
+        //update all units
         foreach (UnitBase unit in currentlyActiveUnits)
         {
             if (unit != null)

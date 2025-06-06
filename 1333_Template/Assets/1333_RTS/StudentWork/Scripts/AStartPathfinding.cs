@@ -3,65 +3,68 @@ using UnityEngine;
 
 public class AStartPathfinding : Pathfinding_Class
 {
-    [Header("Optional Debug Settings")]
     [SerializeField] private bool showSearchGizmos = true;
     [SerializeField] private Color searchedNodeColor = Color.cyan;
     [SerializeField] private float gizmoSize = 0.4f;
 
     private List<GridNode> searchedNodesForGizmos = new();
 
+    //main A* pathfinding software 
     public List<GridNode> FindPath(GridManager gridManager, GridNode start, GridNode end, out List<GridNode> searchedNodes)
     {
-        ClearVisualization();
+        ClearVisualization(); // Clear any previous visualization data
 
-        // initialize A* data structures
-        List<GridNode> openSet = new() { start };
-        HashSet<GridNode> closedSet = new();
-        Dictionary<GridNode, int> costSoFar = new() { [start] = 0 };
-        Dictionary<GridNode, int> estimatedTotalCost = new() { [start] = Heuristic(start, end) };
-        Dictionary<GridNode, GridNode> cameFrom = new() { [start] = start };
+        // A* algorithm initialization
+        List<GridNode> openSet = new() { start }; // Open set starts with the start node
+        HashSet<GridNode> closedSet = new(); // Set for processed nodes
+        Dictionary<GridNode, int> costSoFar = new() { [start] = 0 }; // Costs for reaching each node
+        Dictionary<GridNode, int> estimatedTotalCost = new() { [start] = Heuristic(start, end) }; // Estimated total cost (f = g + h)
+        Dictionary<GridNode, GridNode> cameFrom = new() { [start] = start }; // Path reconstruction map
 
-        // A* algorithm
+        // A* algorithm loop
         while (openSet.Count > 0)
         {
-            GridNode current = openSet[0];
+            GridNode current = openSet[0]; // Start with the first node in openSet
             foreach (var node in openSet)
             {
                 if (estimatedTotalCost[node] < estimatedTotalCost[current])
-                    current = node;
+                    current = node; //choose the node with the lowest f cost
             }
 
-            if (current == end)
-                break;
+            if (current == end) break;
 
-            openSet.Remove(current);
+            openSet.Remove(current); 
             closedSet.Add(current);
 
             if (showSearchGizmos)
                 searchedNodesForGizmos.Add(current);
 
+            //check neighbors of the current node
             foreach (GridNode neighbor in gridManager.GetNeighborNodes(current))
             {
                 if (!IsNodeWalkable(neighbor) || closedSet.Contains(neighbor)) continue;
 
+                //calculate cost to move to this neighbor
                 int newCost = costSoFar[current] + neighbor.terrainType.MovementCost;
 
+                // If a better path is found, update the cost and add the neighbor to the open set
                 if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
                 {
                     costSoFar[neighbor] = newCost;
-                    estimatedTotalCost[neighbor] = newCost + Heuristic(neighbor, end);
-                    cameFrom[neighbor] = current;
+                    estimatedTotalCost[neighbor] = newCost + Heuristic(neighbor, end); 
+                    cameFrom[neighbor] = current; 
 
                     if (!openSet.Contains(neighbor))
-                        openSet.Add(neighbor);
+                        openSet.Add(neighbor); // Add neighbor to open set if not already there
                 }
             }
         }
-
-        searchedNodes = new List<GridNode>(closedSet);
+        //return the nodes visited during the search and reconstruct and return the path from start to end
+        searchedNodes = new List<GridNode>(closedSet); 
         return ReconstructPath(cameFrom, start, end);
     }
 
+    //reconstructs the path from start to end using the 'cameFrom' dictionary
     private List<GridNode> ReconstructPath(Dictionary<GridNode, GridNode> cameFrom, GridNode start, GridNode end)
     {
         List<GridNode> path = new();
@@ -71,15 +74,16 @@ public class AStartPathfinding : Pathfinding_Class
         GridNode current = end;
         while (current != start)
         {
-            path.Add(current);
+            path.Add(current); 
             current = cameFrom[current];
         }
 
         path.Add(start);
-        path.Reverse();
+        path.Reverse(); 
         return path;
     }
 
+    //unity Gizmos function for visualizing the search process in the editor
     private void OnDrawGizmos()
     {
         if (!showSearchGizmos || searchedNodesForGizmos == null) return;
@@ -92,27 +96,31 @@ public class AStartPathfinding : Pathfinding_Class
         }
     }
 
+    //clears the list of nodes used for visualization
     public void ClearVisualization()
     {
         searchedNodesForGizmos?.Clear();
     }
 
+    //check if a node is walkable based on its terrain type or walkability flag
     private bool IsNodeWalkable(GridNode node)
     {
-        return node != null && (node.terrainType?.Walkable ?? node.walkable);
+        return node != null && (node.terrainType?.Walkable ?? node.walkable); // Check if node is walkable
     }
 
+    //heuristic function to calculate the Manhattan distance between two nodes
     private int Heuristic(GridNode a, GridNode b)
     {
         Vector2Int posA = WorldToGridPosition(a.WorldPosition);
         Vector2Int posB = WorldToGridPosition(b.WorldPosition);
-        return Mathf.Abs(posA.x - posB.x) + Mathf.Abs(posA.y - posB.y);
+        return Mathf.Abs(posA.x - posB.x) + Mathf.Abs(posA.y - posB.y); // Manhattan distance
     }
 
+    //converts a world position to grid position (2D grid)
     private Vector2Int WorldToGridPosition(Vector3 worldPos)
     {
         int x = Mathf.RoundToInt(worldPos.x);
-        int y = Mathf.RoundToInt(worldPos.z); // assuming XZ plane
+        int y = Mathf.RoundToInt(worldPos.z); // Assuming XZ plane for 2D grid
         return new Vector2Int(x, y);
     }
 }

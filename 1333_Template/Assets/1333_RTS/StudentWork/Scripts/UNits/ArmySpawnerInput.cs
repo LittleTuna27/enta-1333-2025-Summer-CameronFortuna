@@ -20,6 +20,7 @@ public class ArmySpawnerInput : MonoBehaviour
 
     private void HandleSpawning()
     {
+        //spawn in unit form player manager
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             if (playerArmyManager != null)
@@ -32,7 +33,7 @@ public class ArmySpawnerInput : MonoBehaviour
                 Debug.LogError("Player Army Manager is not assigned!");
             }
         }
-
+        //spawn in unit form enemy manager
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             if (enemyArmyManager != null)

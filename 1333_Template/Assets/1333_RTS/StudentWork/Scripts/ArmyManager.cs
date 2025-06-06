@@ -10,7 +10,6 @@ public class ArmyManager : MonoBehaviour
         if (!allTeams.Contains(team))
             allTeams.Add(team);
     }
-
     public CurrentTeamArmyManager GetTeam(int armyID)
     {
         return allTeams.Find(team => team.armyID == armyID);

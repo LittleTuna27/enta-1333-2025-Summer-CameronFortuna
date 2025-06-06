@@ -4,24 +4,24 @@ using System.Collections.Generic;
 public class UnitInstance : UnitBase
 {
     [Header("Component References")]
-    [SerializeField] private Animator animator; // for future animation use
-    [SerializeField] private SkinnedMeshRenderer unitSkin; // for visual selection
-    [SerializeField] private ParticleSystem hurtParticles; // hit feedback
-    [SerializeField] private PathFinderVisulization pathFinderVisulization; // draws the path visually
+    [SerializeField] private Animator animator;
+    [SerializeField] private SkinnedMeshRenderer unitSkin;
+    [SerializeField] private ParticleSystem hurtParticles;
+    [SerializeField] private PathFinderVisulization pathFinderVisulization;
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
 
-    protected List<GridNode> currentPath = new(); // stores the active path
-    protected int pathIndex = 0; // current node index in the path
+    protected List<GridNode> currentPath = new();
+    protected int pathIndex = 0;
 
-    private bool isMoving = false; // flag to track if unit is currently moving
+    private bool isMoving = false;
     private UnitState _state = UnitState.Idle;
 
     public bool IsMoving => isMoving;
     public List<GridNode> CurrentPath => currentPath;
 
-    // Property to expose and log state changes
+    //showing the state th\e unit is in
     public UnitState state
     {
         get => _state;
@@ -37,7 +37,7 @@ public class UnitInstance : UnitBase
 
     private void Start()
     {
-        // Register this unit to the selection manager if present
+        //register this unit to the selection manager if present
         if (UnitSelectionManager.Instance != null)
         {
             UnitSelectionManager.Instance.allUnitsList.Add(this);
@@ -49,7 +49,7 @@ public class UnitInstance : UnitBase
         }
     }
 
-    // Sets up pathfinding, visuals, and team context for the unit
+    //setting up the pathfinding, visuals, and team context for each unit
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis)
     {
         this.pathfinder = pathfinder;
@@ -59,13 +59,14 @@ public class UnitInstance : UnitBase
 
         Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}");
 
-        // Validate references
+        //reference check
         if (this.pathfinder == null) Debug.LogError($"{name}: pathfinder is null!");
         if (this.unitType == null) Debug.LogError($"{name}: unitType is null!");
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
-    // Public method to command the unit to move to a target node
+    //telling the unit to move to a certain node
+    //handeling geting the nodes and call pathfinding and visualizer to get the math and draw the path
     public override void MoveTo(GridNode targetNode)
     {
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
@@ -74,7 +75,7 @@ public class UnitInstance : UnitBase
         currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
         Debug.Log($"{name} path found with {currentPath?.Count ?? 0} nodes.");
 
-        // Visualize the chosen path
+        // visualize the chosen path
         if (pathFinderVisulization != null)
         {
             pathFinderVisulization.DrawPath(currentPath);
@@ -84,7 +85,7 @@ public class UnitInstance : UnitBase
             Debug.LogWarning($"{name} has no pathFinderVisulization assigned!");
         }
 
-        // Begin path traversal if valid
+        //start movement path traversal if there is a path
         if (currentPath != null && currentPath.Count > 0)
         {
             StartPathMovement(currentPath);
@@ -97,7 +98,7 @@ public class UnitInstance : UnitBase
         }
     }
 
-    // Resets path and movement counters to start walking
+    //reset the path and movement counters to start walking
     public void StartPathMovement(List<GridNode> path)
     {
         currentPath = path;
@@ -108,7 +109,7 @@ public class UnitInstance : UnitBase
         Debug.Log($"{name} is beginning movement along path with {path?.Count ?? 0} nodes.");
     }
 
-    // Called each frame while moving to progress along the path
+    //for each frame while moving to progress along the path
     public override void DoMove()
     {
         if (!isMoving || currentPath == null || pathIndex >= currentPath.Count)
@@ -121,7 +122,7 @@ public class UnitInstance : UnitBase
             }
             return;
         }
-
+        //setting the targetr movement node to the indexed node and setting the units speed based of its type
         Vector3 target = currentPath[pathIndex].WorldPosition + Vector3.up * 0.5f;
         float moveSpeed = unitType.MoveSpeed;
 
@@ -132,15 +133,14 @@ public class UnitInstance : UnitBase
             state = UnitState.Idle;
             return;
         }
-
+        //moving towards the target and increasing the index as it gets close to the square
         transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-
         if (Vector3.Distance(transform.position, target) < 0.1f)
         {
             pathIndex++;
             Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
         }
-
+        //once the unit reaches the end of the list stop moving
         if (pathIndex >= currentPath.Count)
         {
             isMoving = false;
@@ -149,14 +149,14 @@ public class UnitInstance : UnitBase
         }
     }
 
-    // moveing the uit every tick
+    //moving the uit every tick
     public override void PerTick()
     {
         if (state == UnitState.Moving)
             DoMove();
     }
 
-    // Called when unit is selected
+    //sellecting the unit
     public void Select()
     {
         if (unitSkin != null)
@@ -166,7 +166,7 @@ public class UnitInstance : UnitBase
         Debug.Log($"{name} selected.");
     }
 
-    // Called when unit is deselected
+    //desellecting the unit
     public void Deselect()
     {
         if (unitSkin != null)
