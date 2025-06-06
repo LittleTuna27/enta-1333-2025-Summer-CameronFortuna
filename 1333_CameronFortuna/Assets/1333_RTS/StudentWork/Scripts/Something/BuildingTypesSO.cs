@@ -13,4 +13,5 @@ public class BuildingTypesSO : ScriptableObject
 public class BuildingData
 {
     public string BuildingName;
+    public Sprite BuildingIcon;
 }
