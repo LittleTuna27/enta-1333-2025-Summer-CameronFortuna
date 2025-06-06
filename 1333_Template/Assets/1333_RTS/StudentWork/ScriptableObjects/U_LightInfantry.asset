@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 949cfc42935a63744b7ed2908dd1ae85, type: 3}
   m_Name: U_LightInfantry
   m_EditorClassIdentifier: 
-  _maxHp: 0
-  _moveSpeed: 0
-  _damage: 0
-  _defence: 0
+  _maxHp: 100
+  _moveSpeed: 1
+  _damage: 5
+  _defence: 5
   _attackType: 0
   _range: 1
   _width: 1
-  _height: 0
+  _height: 1

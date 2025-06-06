@@ -16,45 +16,65 @@ public class UnitInstance : UnitBase
     protected int pathIndex = 0; // current node index in the path
 
     private bool isMoving = false; // flag to track if unit is currently moving
-    public UnitState state;
+    private UnitState _state = UnitState.Idle;
 
     public bool IsMoving => isMoving;
     public List<GridNode> CurrentPath => currentPath;
 
+    // Property to expose and log state changes
+    public UnitState state
+    {
+        get => _state;
+        set
+        {
+            if (_state != value)
+            {
+                Debug.Log($"{name} state changed from {_state} to {value}");
+                _state = value;
+            }
+        }
+    }
+
     private void Start()
     {
-        // register with the global selection manager
-        UnitSelectionManager.Instance.allUnitsList.Add(this);
-        Debug.Log($"{name} registered to UnitSelectionManager.");
+        // Register this unit to the selection manager if present
+        if (UnitSelectionManager.Instance != null)
+        {
+            UnitSelectionManager.Instance.allUnitsList.Add(this);
+            Debug.Log($"{name} registered to UnitSelectionManager.");
+        }
+        else
+        {
+            Debug.LogWarning("UnitSelectionManager.Instance is null!");
+        }
     }
 
+    // Sets up pathfinding, visuals, and team context for the unit
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis)
     {
-        // assign dependencies at runtime from army manager
         this.pathfinder = pathfinder;
-        base.unitType = unitType;
+        this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();
         gridManager = grid;
         this.pathFinderVisulization = pathFinderVis;
+
+        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}");
+
+        // Validate references
+        if (this.pathfinder == null) Debug.LogError($"{name}: pathfinder is null!");
+        if (this.unitType == null) Debug.LogError($"{name}: unitType is null!");
+        if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
+    // Public method to command the unit to move to a target node
     public override void MoveTo(GridNode targetNode)
     {
-        // validate input
-        if (pathfinder == null || targetNode == null)
-        {
-            Debug.LogWarning($"{name} can't move: missing pathfinder or target node.");
-            return;
-        }
-
-        // find the start node from current world position
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
+
         List<GridNode> searched;
-
-        // generate A* path for the uunit to follow
         currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
-        Debug.Log($"{name} path found with {currentPath.Count} nodes.");
+        Debug.Log($"{name} path found with {currentPath?.Count ?? 0} nodes.");
 
-        // draws out the current path
+        // Visualize the chosen path
         if (pathFinderVisulization != null)
         {
             pathFinderVisulization.DrawPath(currentPath);
@@ -64,8 +84,8 @@ public class UnitInstance : UnitBase
             Debug.LogWarning($"{name} has no pathFinderVisulization assigned!");
         }
 
-        // if path is valid, start moving
-        if (currentPath.Count > 0)
+        // Begin path traversal if valid
+        if (currentPath != null && currentPath.Count > 0)
         {
             StartPathMovement(currentPath);
             state = UnitState.Moving;
@@ -73,40 +93,54 @@ public class UnitInstance : UnitBase
         else
         {
             Debug.LogWarning($"{name} could not find path to target.");
+            state = UnitState.Idle;
         }
     }
 
+    // Resets path and movement counters to start walking
     public void StartPathMovement(List<GridNode> path)
     {
-        // reset movement state
         currentPath = path;
         pathIndex = 0;
         isMoving = true;
+        state = UnitState.Moving;
 
-        Debug.Log($"{name} is beginning movement along path.");
+        Debug.Log($"{name} is beginning movement along path with {path?.Count ?? 0} nodes.");
     }
 
+    // Called each frame while moving to progress along the path
     public override void DoMove()
     {
-        // check if we're still allowed to move
         if (!isMoving || currentPath == null || pathIndex >= currentPath.Count)
         {
-            isMoving = false;
+            if (isMoving)
+            {
+                isMoving = false;
+                state = UnitState.Idle;
+                Debug.Log($"{name} stopped moving - reached destination or invalid path.");
+            }
             return;
         }
 
-        // move toward the current target node
         Vector3 target = currentPath[pathIndex].WorldPosition + Vector3.up * 0.5f;
-        transform.position = Vector3.MoveTowards(transform.position, target, unitType.MoveSpeed * Time.deltaTime);
+        float moveSpeed = unitType.MoveSpeed;
 
-        // advance to next node if close enough
+        if (moveSpeed <= 0)
+        {
+            Debug.LogError($"{name} has invalid move speed: {moveSpeed}");
+            isMoving = false;
+            state = UnitState.Idle;
+            return;
+        }
+
+        transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+
         if (Vector3.Distance(transform.position, target) < 0.1f)
         {
             pathIndex++;
             Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
         }
 
-        // stop when done
         if (pathIndex >= currentPath.Count)
         {
             isMoving = false;
@@ -115,24 +149,30 @@ public class UnitInstance : UnitBase
         }
     }
 
+    // moveing the uit every tick
     public override void PerTick()
     {
-        // called by the RTS update manager
         if (state == UnitState.Moving)
             DoMove();
     }
 
+    // Called when unit is selected
     public void Select()
     {
-        // highlight on selection (optional)
-        // unitSkin.material.color = Color.cyan;
+        if (unitSkin != null)
+        {
+            unitSkin.material.color = Color.cyan;
+        }
         Debug.Log($"{name} selected.");
     }
 
+    // Called when unit is deselected
     public void Deselect()
     {
-        // remove selection highlight (optional)
-        // unitSkin.material.color = Color.white;
+        if (unitSkin != null)
+        {
+            unitSkin.material.color = Color.white;
+        }
         Debug.Log($"{name} deselected.");
     }
 }

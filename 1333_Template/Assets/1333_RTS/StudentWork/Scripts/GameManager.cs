@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PathFinderVisulization pathFinder;
     [SerializeField] private AStartPathfinding pathfindingLogic;
     [SerializeField] private CurrentTeamArmyManager currentTeamManager;
+    [SerializeField] private CurrentTeamArmyManager EnemyTeamManager;
 
     private void Awake()
     {
@@ -16,7 +17,8 @@ public class GameManager : MonoBehaviour
         pathFinder.ResetFeild();
 
         // ? Spawn a unit at (0, 0, 0)
-        currentTeamManager.SpawnUnit(new Vector3(0, 0, 0));
+        //currentTeamManager.SpawnUnit(new Vector3(0, 0, 0));
+      
     }
 
     private void Update()
