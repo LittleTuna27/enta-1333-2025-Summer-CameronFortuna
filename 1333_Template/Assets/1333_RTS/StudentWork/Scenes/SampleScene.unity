@@ -648,8 +648,13 @@ MonoBehaviour:
   unitPrefab: {fileID: 4863667100732135418, guid: 4b28a6b49def0aa479b2a637c64949c5, type: 3}
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
   pathfinder: {fileID: 2084382706}
+<<<<<<< HEAD
   gridManager: {fileID: 0}
   visualizer: {fileID: 0}
+=======
+  gridManager: {fileID: 2138901354}
+  visualizer: {fileID: 123884185}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
   teamMaterials:
   - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
 --- !u!4 &458632821
@@ -747,7 +752,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ec9e4805443249409772f26bd72e643, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
   gridManager: {fileID: 2138901356}
+=======
+  gridManager: {fileID: 2138901354}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
   cam: {fileID: 330585545}
 --- !u!114 &951027758
 MonoBehaviour:
@@ -776,7 +785,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boxVisual: {fileID: 59519581}
+<<<<<<< HEAD
   gridManager: {fileID: 0}
+=======
+  gridManager: {fileID: 2138901354}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
 --- !u!4 &951027760
 Transform:
   m_ObjectHideFlags: 0
@@ -839,6 +852,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 715a0e1fdd716fd41959a58f9c440429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
+=======
+  allTeams: []
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
 --- !u!4 &1278613959
 Transform:
   m_ObjectHideFlags: 0
@@ -888,7 +905,11 @@ MonoBehaviour:
   pathFinder: {fileID: 123884185}
   pathfindingLogic: {fileID: 2084382706}
   currentTeamManager: {fileID: 458632820}
+<<<<<<< HEAD
   EnemyTeamManager: {fileID: 1745796420}
+=======
+  EnemyTeamManager: {fileID: 0}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
 --- !u!4 &1358333889
 Transform:
   m_ObjectHideFlags: 0
@@ -1227,8 +1248,13 @@ MonoBehaviour:
   unitPrefab: {fileID: 4863667100732135418, guid: 4b28a6b49def0aa479b2a637c64949c5, type: 3}
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
   pathfinder: {fileID: 2084382706}
+<<<<<<< HEAD
   gridManager: {fileID: 0}
   visualizer: {fileID: 0}
+=======
+  gridManager: {fileID: 2138901354}
+  visualizer: {fileID: 123884185}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
   teamMaterials:
   - {fileID: 2100000, guid: 98a7fdcb4ebb44344b4afe0424d44b82, type: 2}
 --- !u!4 &1745796421
@@ -1310,6 +1336,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
+=======
+--- !u!114 &2138901354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2138901353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b85da51b964dbf54bb0410a2c2f29f09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridSettings: {fileID: 11400000, guid: 52de7167c5440e44fbd68b8f07d9bdf7, type: 2}
+  defaultTerrainType: {fileID: 11400000, guid: b70c3f97805062148b10cb660c3d43fb, type: 2}
+  gridTilePrefab: {fileID: 2381754256501320356, guid: 42ac55d8c5ad76d4995b870be6c6f3c5, type: 3}
+  terrainTypes:
+  - {fileID: 11400000, guid: b70c3f97805062148b10cb660c3d43fb, type: 2}
+  - {fileID: 11400000, guid: d9b484935110eef4781f549b7f532cb8, type: 2}
+  - {fileID: 11400000, guid: c263c4d3f5d37df4585cb61e33c6e454, type: 2}
+>>>>>>> 0a5a661e7b5c24e971a0392d630842e263c98ff3
 --- !u!4 &2138901355
 Transform:
   m_ObjectHideFlags: 0
