@@ -652,7 +652,7 @@ MonoBehaviour:
   gridManager: {fileID: 2138901354}
   visualizer: {fileID: 123884185}
   teamMaterials:
-  - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
+  - {fileID: 7348781222707571943, guid: 3901a6c7ff87eed49942d75e0c8fc928, type: 3}
 --- !u!4 &458632821
 Transform:
   m_ObjectHideFlags: 0
@@ -957,7 +957,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 715a0e1fdd716fd41959a58f9c440429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  allTeams: []
+  allTeams:
+  - {fileID: 458632820}
 --- !u!4 &1278613959
 Transform:
   m_ObjectHideFlags: 0
@@ -1007,7 +1008,7 @@ MonoBehaviour:
   pathFinder: {fileID: 123884185}
   pathfindingLogic: {fileID: 2084382706}
   currentTeamManager: {fileID: 458632820}
-  EnemyTeamManager: {fileID: 0}
+  EnemyTeamManager: {fileID: 1745796420}
 --- !u!4 &1358333889
 Transform:
   m_ObjectHideFlags: 0
@@ -1145,7 +1146,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LayoutGroupParent: {fileID: 813688510}
-  ButtonPrefab: {fileID: 5941347001914940001, guid: 6eb453f06f9e5074da5bb18da59fbc51, type: 3}
+  ButtonPrefab: {fileID: 2729504164774745036, guid: 6eb453f06f9e5074da5bb18da59fbc51, type: 3}
   BuildingData: {fileID: 11400000, guid: 2deaa70d78e36d145af1decdff85430a, type: 2}
 --- !u!1001 &1725190152
 PrefabInstance:
@@ -1513,7 +1514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bb258b828273e945a47fb91c5d5695c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  armyID: 0
+  armyID: 1
   currentlyActiveUnits: []
   unitPrefab: {fileID: 4863667100732135418, guid: 4b28a6b49def0aa479b2a637c64949c5, type: 3}
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
