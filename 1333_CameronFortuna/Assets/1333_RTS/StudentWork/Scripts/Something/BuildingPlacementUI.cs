@@ -7,6 +7,7 @@ public class BuildingPlacementUI : MonoBehaviour
     [SerializeField] private RectTransform LayoutGroupParent;
     [SerializeField] private SelectBuiildingButton ButtonPrefab;
     [SerializeField] private BuildingTypesSO BuildingData;
+    
 
     private void Start()
     {

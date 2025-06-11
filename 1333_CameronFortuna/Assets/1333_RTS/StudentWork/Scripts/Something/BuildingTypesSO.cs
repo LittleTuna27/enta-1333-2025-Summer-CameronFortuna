@@ -14,4 +14,7 @@ public class BuildingData
 {
     public string BuildingName;
     public Sprite BuildingIcon;
+    public GameObject BuildingPrefab;
+    public int Width = 1; 
+    public int Height = 1; 
 }

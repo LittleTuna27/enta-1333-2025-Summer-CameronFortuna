@@ -6,10 +6,8 @@ public class GridManager : MonoBehaviour
 {
     [SerializeField] private GridSettings gridSettings;
     [SerializeField] private TerrainType defaultTerrainType;
-    [SerializeField] private GameObject gridTilePrefab; // assign in Inspector
-
-
     [SerializeField] private List<TerrainType> terrainTypes = new();
+
     public GridSettings GridSettings => gridSettings;
 
     private GridNode[,] gridNodes;
@@ -29,7 +27,9 @@ public class GridManager : MonoBehaviour
                     ? new Vector3(x, 0, y) * gridSettings.NodeSize
                     : new Vector3(x, y, 0) * gridSettings.NodeSize;
 
-                TerrainType chosenTerrain = terrainTypes[Random.Range(0, terrainTypes.Count)];
+                TerrainType chosenTerrain = terrainTypes.Count > 0
+                    ? terrainTypes[Random.Range(0, terrainTypes.Count)]
+                    : defaultTerrainType;
 
                 GridNode node = new GridNode
                 {
@@ -41,26 +41,15 @@ public class GridManager : MonoBehaviour
 
                 gridNodes[x, y] = node;
                 allNodes.Add(node);
-
-                // Instantiate physical tile with collider
-                GameObject tile = Instantiate(gridTilePrefab, worldPos, Quaternion.identity);
-                tile.name = node.Name;
-                tile.transform.localScale = Vector3.one * gridSettings.NodeSize * 0.9f;
-                GridTileBehaviour tileScript = tile.GetComponent<GridTileBehaviour>();
-                if (tileScript != null)
-                {
-                    tileScript.Initialize(node);
-                }
             }
         }
 
         IsInitialized = true;
     }
+
     private void OnDrawGizmos()
     {
         if (gridNodes == null || gridSettings == null) return;
-
-        Gizmos.color = Color.white;
 
         for (int x = 0; x < gridSettings.GridSizeX; x++)
         {
@@ -74,14 +63,13 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+
     public GridNode GetNode(int x, int y)
     {
         if (x >= 0 && x < gridSettings.GridSizeX && y >= 0 && y < gridSettings.GridSizeY)
             return gridNodes[x, y];
         return null;
     }
-
-   
 
     public List<GridNode> GetAllNodes() => allNodes;
 
@@ -102,9 +90,9 @@ public class GridManager : MonoBehaviour
 
         return neighbors;
     }
+
     public GridNode GetNodeFromWorldPosition(Vector3 position)
     {
-        // Determine which axes to use based on grid orientation.
         int x = gridSettings.UseXZPlane
             ? Mathf.RoundToInt(position.x / gridSettings.NodeSize)
             : Mathf.RoundToInt(position.z / gridSettings.NodeSize);
@@ -112,20 +100,9 @@ public class GridManager : MonoBehaviour
             ? Mathf.RoundToInt(position.z / gridSettings.NodeSize)
             : Mathf.RoundToInt(position.y / gridSettings.NodeSize);
 
-        // Clamp coordinates to grid bounds.
         x = Mathf.Clamp(x, 0, gridSettings.GridSizeX - 1);
         y = Mathf.Clamp(y, 0, gridSettings.GridSizeY - 1);
 
-        // Return the node at the clamped coordinates.
         return GetNode(x, y);
     }
-    public GridNode GetNode(Vector2Int position)
-    {
-        if (position.x >= 0 && position.x < gridSettings.GridSizeX && position.y >= 0 && position.y < gridSettings.GridSizeY)
-        {
-            return gridNodes[position.x, position.y];
-        }
-        return null;
-    }
-
 }

@@ -14,9 +14,13 @@ public class SelectBuiildingButton : MonoBehaviour
     public void Setup(BuildingData buildingData)
     {
         buildingDataForButton = buildingData;
-
         buttonText.text = buildingDataForButton.BuildingName;
 
-        //buttonImage.sprite = buildingDataForBUtton.buildingIcon;
+        // Add this
+        text.onClick.AddListener(() =>
+        {
+            BuildingPlacementManager.Instance.SetActiveBuilding(buildingDataForButton);
+        });
     }
+
 }

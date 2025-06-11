@@ -15,11 +15,16 @@ MonoBehaviour:
   Buildings:
   - BuildingName: Wall
     BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 3903631858789365080, guid: b6e30910a9a48d644b5d2ebefc0d3ed7, type: 3}
   - BuildingName: Gate
     BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 1454407553541596618, guid: f04ae1a92823b9b429279fefae92e1c8, type: 3}
   - BuildingName: Tower
     BuildingIcon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
-  - BuildingName: Barraks
-    BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 8974616586116681510, guid: cdad0a45cc162cd478ac31df2164f7fc, type: 3}
   - BuildingName: Barracks
     BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 5132547315402562204, guid: a3b84a6624a30d34fbd4d0d4dffe9729, type: 3}
+  - BuildingName: Castle
+    BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 6734835977640512929, guid: a92dccf014aa75b4d916a3ead691cdbd, type: 3}

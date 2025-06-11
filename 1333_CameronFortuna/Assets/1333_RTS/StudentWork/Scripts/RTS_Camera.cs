@@ -1,51 +1,53 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RTS_Camera : MonoBehaviour
 {
-    public float moveSpeed = 10f; // Speed of camera movement
-    public float rotateSpeed = 100f; // Speed of camera rotation
-    public float zoomSpeed = 2f; // Speed of zooming in and out
-    public float minZoom = 5f; // Minimum zoom limit
-    public float maxZoom = 30f; // Maximum zoom limit
-    public float verticalSpeed = 5f; // Speed of camera vertical movement
+    public float moveSpeed = 10f;
+    public float rotateSpeed = 100f;
+    public float zoomSpeed = 10f;
+    public float minZoom = 10f;
+    public float maxZoom = 80f;
+    public float verticalSpeed = 10f;
 
-    private Camera cam;
+    public Transform cameraHolder; // assign in inspector to the parent of your camera (to rotate/zoom)
 
-    void Start()
+    private void Update()
     {
-        cam = Camera.main;
+        HandleMovement();
+        HandleZoom();
+        HandleRotation();
     }
 
-    void Update()
+    void HandleMovement()
     {
-        // Move the camera with WASD or arrow keys
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
-        // Move the camera up and down with Q and E keys
-        if (Input.GetKey(KeyCode.LeftControl))
-        {
-            transform.Translate(Vector3.down * verticalSpeed * Time.deltaTime, Space.World);
-        }
-        if (Input.GetKey(KeyCode.Space))
-        {
+        Vector3 direction = new Vector3(h, 0f, v).normalized;
+        transform.Translate(direction * moveSpeed * Time.deltaTime, Space.World);
+
+        if (Input.GetKey(KeyCode.E))
             transform.Translate(Vector3.up * verticalSpeed * Time.deltaTime, Space.World);
-        }
+        if (Input.GetKey(KeyCode.Q))
+            transform.Translate(Vector3.down * verticalSpeed * Time.deltaTime, Space.World);
+    }
 
-        // Zoom in and out using the mouse scroll wheel
+    void HandleZoom()
+    {
         float scroll = Input.GetAxis("Mouse ScrollWheel");
-        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView - scroll * zoomSpeed, minZoom, maxZoom);
-
-        // Rotate the camera with right mouse button drag
-        if (Input.GetKeyDown(KeyCode.E)) // Right mouse button
+        if (cameraHolder != null)
         {
-            float rotation = Input.GetAxis("Mouse X") * rotateSpeed * Time.deltaTime;
-            transform.Rotate(0, rotation, 0, Space.World);
+            float newY = Mathf.Clamp(cameraHolder.localPosition.y - scroll * zoomSpeed, minZoom, maxZoom);
+            cameraHolder.localPosition = new Vector3(cameraHolder.localPosition.x, newY, cameraHolder.localPosition.z);
+        }
+    }
+
+    void HandleRotation()
+    {
+        if (Input.GetMouseButton(1)) // Right Mouse Held
+        {
+            float mouseX = Input.GetAxis("Mouse X");
+            transform.Rotate(0f, mouseX * rotateSpeed * Time.deltaTime, 0f, Space.World);
         }
     }
 }
-
