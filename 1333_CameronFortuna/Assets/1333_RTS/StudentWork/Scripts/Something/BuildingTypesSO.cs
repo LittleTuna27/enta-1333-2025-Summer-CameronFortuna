@@ -16,5 +16,7 @@ public class BuildingData
     public Sprite BuildingIcon;
     public GameObject BuildingPrefab;
     public int Width = 1; 
-    public int Height = 1; 
+    public int Height = 1;
+
+    public Vector3 Scale = Vector3.one;
 }

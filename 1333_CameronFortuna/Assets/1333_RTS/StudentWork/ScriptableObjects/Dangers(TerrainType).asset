@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainName: Default
   gizmoColour: {r: 0.6698113, g: 0, b: 0.6698113, a: 1}
-  walkable: 0
+  walkable: 1
   movementCost: 25
