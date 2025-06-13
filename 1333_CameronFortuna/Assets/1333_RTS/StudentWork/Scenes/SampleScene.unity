@@ -430,7 +430,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 5, y: 15, z: -10}
+  m_LocalPosition: {x: 5, y: 5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -530,12 +530,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 2138901354}
   ghostMaterial: {fileID: 2100000, guid: e6c9ecef602aeef4bb460fece9f229dc, type: 2}
-  validPlacementMaterial: {fileID: 2100000, guid: e6c9ecef602aeef4bb460fece9f229dc, type: 2}
-  invalidPlacementMaterial: {fileID: 2100000, guid: f91261f4149a7af44a872cf537264f7e, type: 2}
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 1
-  showPlacementPreview: 1
 --- !u!4 &383843351
 Transform:
   m_ObjectHideFlags: 0
@@ -705,7 +699,7 @@ MonoBehaviour:
   gridManager: {fileID: 2138901354}
   visualizer: {fileID: 123884185}
   teamMaterials:
-  - {fileID: 7348781222707571943, guid: 3901a6c7ff87eed49942d75e0c8fc928, type: 3}
+  - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
 --- !u!4 &458632821
 Transform:
   m_ObjectHideFlags: 0
@@ -1678,7 +1672,7 @@ MonoBehaviour:
   armyID: 1
   currentlyActiveUnits: []
   unitPrefab: {fileID: 4863667100732135418, guid: 4b28a6b49def0aa479b2a637c64949c5, type: 3}
-  defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
+  defaultUnitType: {fileID: 11400000, guid: 5f7fcc837c993254590de558c091a621, type: 2}
   pathfinder: {fileID: 2084382706}
   gridManager: {fileID: 2138901354}
   visualizer: {fileID: 123884185}

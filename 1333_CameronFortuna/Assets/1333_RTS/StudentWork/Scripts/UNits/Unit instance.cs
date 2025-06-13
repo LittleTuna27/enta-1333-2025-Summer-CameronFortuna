@@ -9,6 +9,10 @@ public class UnitInstance : UnitBase
     [SerializeField] private ParticleSystem hurtParticles;
     [SerializeField] private PathFinderVisulization pathFinderVisulization;
 
+    [Header("Army Settings")]
+    [SerializeField] private int armyID = 0; // The army this unit belongs to
+    private CurrentTeamArmyManager armyManager;
+
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
 
@@ -20,8 +24,10 @@ public class UnitInstance : UnitBase
 
     public bool IsMoving => isMoving;
     public List<GridNode> CurrentPath => currentPath;
+    public int ArmyID => armyID;
+    public CurrentTeamArmyManager ArmyManager => armyManager;
 
-    //showing the state th\e unit is in
+    //showing the state the unit is in
     public UnitState state
     {
         get => _state;
@@ -50,14 +56,18 @@ public class UnitInstance : UnitBase
     }
 
     //setting up the pathfinding, visuals, and team context for each unit
-    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis)
+    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis, int armyID = 0)
     {
         this.pathfinder = pathfinder;
         this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();
         gridManager = grid;
         this.pathFinderVisulization = pathFinderVis;
+        this.armyID = armyID;
 
-        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}");
+        // Find the army manager for this army ID
+        FindArmyManager();
+
+        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}, ArmyID: {this.armyID}");
 
         //reference check
         if (this.pathfinder == null) Debug.LogError($"{name}: pathfinder is null!");
@@ -65,8 +75,39 @@ public class UnitInstance : UnitBase
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
+    private void FindArmyManager()
+    {
+        // Find the army manager that matches this unit's army ID
+        CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
+        foreach (var manager in managers)
+        {
+            if (manager.armyID == armyID)
+            {
+                armyManager = manager;
+                break;
+            }
+        }
+
+        if (armyManager == null)
+        {
+            Debug.LogWarning($"{name}: Could not find army manager for Army ID {armyID}");
+        }
+    }
+
+    public void SetArmyID(int newArmyID)
+    {
+        if (armyID != newArmyID)
+        {
+            int oldArmyID = armyID;
+            armyID = newArmyID;
+            FindArmyManager(); // Find new army manager
+
+            Debug.Log($"{name} switched from Army {oldArmyID} to Army {armyID}");
+        }
+    }
+
     //telling the unit to move to a certain node
-    //handeling geting the nodes and call pathfinding and visualizer to get the math and draw the path
+    //handling getting the nodes and call pathfinding and visualizer to get the math and draw the path
     public override void MoveTo(GridNode targetNode)
     {
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
@@ -122,7 +163,7 @@ public class UnitInstance : UnitBase
             }
             return;
         }
-        //setting the targetr movement node to the indexed node and setting the units speed based of its type
+        //setting the target movement node to the indexed node and setting the units speed based of its type
         Vector3 target = currentPath[pathIndex].WorldPosition + Vector3.up * 0.5f;
         float moveSpeed = unitType.MoveSpeed;
 
@@ -149,14 +190,14 @@ public class UnitInstance : UnitBase
         }
     }
 
-    //moving the uit every tick
+    //moving the unit every tick
     public override void PerTick()
     {
         if (state == UnitState.Moving)
             DoMove();
     }
 
-    //sellecting the unit
+    //selecting the unit
     public void Select()
     {
         if (unitSkin != null)
@@ -166,7 +207,7 @@ public class UnitInstance : UnitBase
         Debug.Log($"{name} selected.");
     }
 
-    //desellecting the unit
+    //deselecting the unit
     public void Deselect()
     {
         if (unitSkin != null)

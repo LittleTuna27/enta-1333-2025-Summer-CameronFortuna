@@ -14,6 +14,21 @@ public class AStartPathfinding : Pathfinding_Class
     {
         ClearVisualization(); // Clear any previous visualization data
 
+        // Validate start and end nodes
+        if (!IsNodeWalkable(start))
+        {
+            Debug.LogWarning("Start node is not walkable!");
+            searchedNodes = new List<GridNode>();
+            return new List<GridNode>();
+        }
+
+        if (!IsNodeWalkable(end))
+        {
+            Debug.LogWarning("End node is not walkable!");
+            searchedNodes = new List<GridNode>();
+            return new List<GridNode>();
+        }
+
         // A* algorithm initialization
         List<GridNode> openSet = new() { start }; // Open set starts with the start node
         HashSet<GridNode> closedSet = new(); // Set for processed nodes
@@ -33,7 +48,7 @@ public class AStartPathfinding : Pathfinding_Class
 
             if (current == end) break;
 
-            openSet.Remove(current); 
+            openSet.Remove(current);
             closedSet.Add(current);
 
             if (showSearchGizmos)
@@ -44,15 +59,15 @@ public class AStartPathfinding : Pathfinding_Class
             {
                 if (!IsNodeWalkable(neighbor) || closedSet.Contains(neighbor)) continue;
 
-                //calculate cost to move to this neighbor
-                int newCost = costSoFar[current] + neighbor.terrainType.MovementCost;
+                //calculate cost to move to this neighbor using the neighbor's movement cost
+                int newCost = costSoFar[current] + neighbor.MovementCost;
 
                 // If a better path is found, update the cost and add the neighbor to the open set
                 if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
                 {
                     costSoFar[neighbor] = newCost;
-                    estimatedTotalCost[neighbor] = newCost + Heuristic(neighbor, end); 
-                    cameFrom[neighbor] = current; 
+                    estimatedTotalCost[neighbor] = newCost + Heuristic(neighbor, end);
+                    cameFrom[neighbor] = current;
 
                     if (!openSet.Contains(neighbor))
                         openSet.Add(neighbor); // Add neighbor to open set if not already there
@@ -60,7 +75,7 @@ public class AStartPathfinding : Pathfinding_Class
             }
         }
         //return the nodes visited during the search and reconstruct and return the path from start to end
-        searchedNodes = new List<GridNode>(closedSet); 
+        searchedNodes = new List<GridNode>(closedSet);
         return ReconstructPath(cameFrom, start, end);
     }
 
@@ -74,12 +89,12 @@ public class AStartPathfinding : Pathfinding_Class
         GridNode current = end;
         while (current != start)
         {
-            path.Add(current); 
+            path.Add(current);
             current = cameFrom[current];
         }
 
         path.Add(start);
-        path.Reverse(); 
+        path.Reverse();
         return path;
     }
 
@@ -102,10 +117,16 @@ public class AStartPathfinding : Pathfinding_Class
         searchedNodesForGizmos?.Clear();
     }
 
-    //check if a node is walkable based on its terrain type or walkability flag
+    //check if a node is walkable based on its terrain type - now uses TerrainType as authority
     private bool IsNodeWalkable(GridNode node)
     {
-        return node != null && (node.terrainType?.Walkable ?? node.walkable); // Check if node is walkable
+        if (node?.terrainType == null)
+        {
+            Debug.LogWarning($"Node at {node?.WorldPosition} has no terrain type assigned!");
+            return false; // Default to not walkable if no terrain type
+        }
+
+        return node.terrainType.Walkable;
     }
 
     //heuristic function to calculate the Manhattan distance between two nodes
