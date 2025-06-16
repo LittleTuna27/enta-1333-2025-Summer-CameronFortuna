@@ -5,7 +5,7 @@ using UnityEngine;
 public class BuildingPlacementUI : MonoBehaviour
 {
     [SerializeField] private RectTransform LayoutGroupParent;
-    [SerializeField] private SelectBuiildingButton ButtonPrefab;
+    [SerializeField] private SelectBuildingButton ButtonPrefab;
     [SerializeField] private BuildingTypesSO BuildingData;
     
 
@@ -13,12 +13,9 @@ public class BuildingPlacementUI : MonoBehaviour
     {
         foreach (BuildingData t in BuildingData.Buildings)
         {
-            SelectBuiildingButton Button = Instantiate(ButtonPrefab,LayoutGroupParent);
+            SelectBuildingButton Button = Instantiate(ButtonPrefab,LayoutGroupParent);
             Button.Setup(t);
 
         }
     }
-
-
-
 }

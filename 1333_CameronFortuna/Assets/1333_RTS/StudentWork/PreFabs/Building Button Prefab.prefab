@@ -367,7 +367,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buttonImage: {fileID: 6957977477681651739}
   buttonText: {fileID: 6578645532187485273}
-  text: {fileID: 5904860043430341046}
+  buttonComponent: {fileID: 5904860043430341046}
 --- !u!114 &5904860043430341046
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,6 +10,8 @@ public class GridManager : MonoBehaviour
 
     public GridSettings GridSettings => gridSettings;
 
+    public float nodeSize => gridSettings.NodeSize;
+
     private GridNode[,] gridNodes;
     [SerializeField] private List<GridNode> allNodes = new();
     public bool IsInitialized { get; private set; } = false;
@@ -24,8 +26,8 @@ public class GridManager : MonoBehaviour
             for (int y = 0; y < gridSettings.GridSizeY; y++)
             {
                 Vector3 worldPos = gridSettings.UseXZPlane
-                    ? new Vector3(x, 0, y) * gridSettings.NodeSize
-                    : new Vector3(x, y, 0) * gridSettings.NodeSize;
+                    ? new Vector3(x, 0, y) * nodeSize
+                    : new Vector3(x, y, 0) * nodeSize;
 
                 TerrainType chosenTerrain = terrainTypes.Count > 0
                     ? terrainTypes[Random.Range(0, terrainTypes.Count)]
@@ -59,7 +61,7 @@ public class GridManager : MonoBehaviour
                 if (node == null) continue;
 
                 Gizmos.color = node.walkable ? node.terrainType.GizmoColour : Color.red;
-                Gizmos.DrawWireCube(node.WorldPosition, Vector3.one * gridSettings.NodeSize * 0.9f);
+                Gizmos.DrawWireCube(node.WorldPosition, Vector3.one * nodeSize * 0.9f);
             }
         }
     }
@@ -83,7 +85,7 @@ public class GridManager : MonoBehaviour
 
         foreach (var dir in directions)
         {
-            Vector3 checkPos = node.WorldPosition + new Vector3(dir.x, 0, dir.z) * gridSettings.NodeSize;
+            Vector3 checkPos = node.WorldPosition + new Vector3(dir.x, 0, dir.z) *  nodeSize;
             GridNode neighbor = GetNodeFromWorldPosition(checkPos);
             if (neighbor != null) neighbors.Add(neighbor);
         }
@@ -94,15 +96,28 @@ public class GridManager : MonoBehaviour
     public GridNode GetNodeFromWorldPosition(Vector3 position)
     {
         int x = gridSettings.UseXZPlane
-            ? Mathf.RoundToInt(position.x / gridSettings.NodeSize)
-            : Mathf.RoundToInt(position.z / gridSettings.NodeSize);
-        int y = gridSettings.UseXZPlane
-            ? Mathf.RoundToInt(position.z / gridSettings.NodeSize)
-            : Mathf.RoundToInt(position.y / gridSettings.NodeSize);
+            ? Mathf.RoundToInt(position.x / nodeSize)
+            : Mathf.RoundToInt(position.z / nodeSize);
 
-        x = Mathf.Clamp(x, 0, gridSettings.GridSizeX - 1);
-        y = Mathf.Clamp(y, 0, gridSettings.GridSizeY - 1);
+        int y = gridSettings.UseXZPlane
+            ? Mathf.RoundToInt(position.z / nodeSize)
+            : Mathf.RoundToInt(position.y / nodeSize);
+
+        if (x < 0 || x >= gridSettings.GridSizeX || y < 0 || y >= gridSettings.GridSizeY)
+            return null;
 
         return GetNode(x, y);
+    }
+    public Vector2Int GetGridPositionFromWorld(Vector3 worldPosition)
+    {
+        int x = gridSettings.UseXZPlane
+            ? Mathf.RoundToInt(worldPosition.x / nodeSize)
+            : Mathf.RoundToInt(worldPosition.z / nodeSize);
+
+        int y = gridSettings.UseXZPlane
+            ? Mathf.RoundToInt(worldPosition.z / nodeSize)
+            : Mathf.RoundToInt(worldPosition.y / nodeSize);
+
+        return new Vector2Int(x, y);
     }
 }
