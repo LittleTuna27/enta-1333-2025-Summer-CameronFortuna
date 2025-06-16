@@ -4,17 +4,18 @@ public class BuildingPlacementManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private GameObject buildingPrefab;
+
+    [Header("Ghost Preview Materials")]
+    [SerializeField] private Material ghostValidMaterial;
+    [SerializeField] private Material ghostInvalidMaterial;
 
     public static BuildingPlacementManager Instance;
     private BuildingData currentSelectedBuilding;
 
     private Camera mainCamera;
+    private GameObject ghostInstance;
+    private bool canPlaceHere = false;
 
-    private void Start()
-    {
-        mainCamera = Camera.main;
-    }
     private void Awake()
     {
         Instance = this;
@@ -23,49 +24,89 @@ public class BuildingPlacementManager : MonoBehaviour
 
     private void Update()
     {
-        // Place building when in build mode
-        if (BuildModeController.Instance.IsInBuildMode)
+        if (!BuildModeController.Instance.IsInBuildMode || currentSelectedBuilding == null)
         {
-            if (Input.GetMouseButtonDown(0)) // Left click
-            {
-                TryPlaceBuildingAtMouseClick();
-            }
-            return; // Prevents spawning units while in build mode
+            DestroyGhost();
+            return;
+        }
+
+        UpdateGhostPreview();
+
+        if (Input.GetMouseButtonDown(0) && canPlaceHere)
+        {
+            PlaceBuilding();
         }
     }
+
     public void SetActiveBuilding(BuildingData buildingData)
     {
         currentSelectedBuilding = buildingData;
+        CreateGhostInstance();
     }
-    private void TryPlaceBuildingAtMouseClick()
+
+    private void CreateGhostInstance()
     {
+        if (ghostInstance != null) Destroy(ghostInstance);
+
+        ghostInstance = Instantiate(currentSelectedBuilding.BuildingPrefab);
+        ghostInstance.transform.localScale = currentSelectedBuilding.Scale;
+
+        ApplyGhostMaterial(ghostValidMaterial);
+    }
+
+    private void DestroyGhost()
+    {
+        if (ghostInstance != null)
+        {
+            Destroy(ghostInstance);
+            ghostInstance = null;
+        }
+    }
+
+    private void ApplyGhostMaterial(Material mat)
+    {
+        if (ghostInstance == null) return;
+
+        foreach (var renderer in ghostInstance.GetComponentsInChildren<Renderer>())
+        {
+            renderer.material = mat;
+        }
+    }
+
+    private void UpdateGhostPreview()
+    {
+        if (ghostInstance == null || currentSelectedBuilding == null)
+            return;
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Vector3 hitPos = hit.point;
-            Vector2Int gridCoords = gridManager.GetGridPositionFromWorld(hitPos);
+            Vector2Int gridCoords = gridManager.GetGridPositionFromWorld(hit.point);
+            Vector3 placePos = CalculateWorldPosition(gridCoords, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth, gridManager.nodeSize);
 
-            int width = 2;
-            int height = 2;
+            ghostInstance.transform.position = placePos;
 
-            if (CanPlaceBuildingAt(gridCoords.x, gridCoords.y, width, height))
+            canPlaceHere = CanPlaceBuildingAt(gridCoords.x, gridCoords.y, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
+            ApplyGhostMaterial(canPlaceHere ? ghostValidMaterial : ghostInvalidMaterial);
+        }
+    }
+
+    private void PlaceBuilding()
+    {
+        Vector2Int gridCoords = gridManager.GetGridPositionFromWorld(ghostInstance.transform.position);
+
+        GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, Quaternion.identity);
+        newBuilding.transform.localScale = currentSelectedBuilding.Scale;
+
+        for (int x = 0; x < currentSelectedBuilding.BuildingWidth; x++)
+        {
+            for (int y = 0; y < currentSelectedBuilding.BuildingDepth; y++)
             {
-                Vector3 placePos = CalculateWorldPosition(gridCoords, width, height, gridManager.nodeSize);
-                Instantiate(buildingPrefab, placePos, Quaternion.identity);
-
-                // Mark grid nodes as unwalkable
-                for (int x = 0; x < width; x++)
+                GridNode node = gridManager.GetNode(gridCoords.x + x, gridCoords.y + y);
+                if (node != null)
                 {
-                    for (int y = 0; y < height; y++)
-                    {
-                        GridNode node = gridManager.GetNode(gridCoords.x + x, gridCoords.y + y);
-                        if (node != null) node.walkable = false;
-                    }
+                    node.walkable = false;
+                    node.IsOccupied = true;
                 }
-            }
-            else
-            {
-                Debug.Log("Can't place building here.");
             }
         }
     }
@@ -80,7 +121,7 @@ public class BuildingPlacementManager : MonoBehaviour
                 int checkY = startY + yOffset;
 
                 GridNode node = gridManager.GetNode(checkX, checkY);
-                if (node == null || !node.walkable)
+                if (node == null || !node.walkable || node.IsOccupied)
                     return false;
             }
         }

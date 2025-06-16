@@ -120,13 +120,13 @@ public class AStartPathfinding : Pathfinding_Class
     //check if a node is walkable based on its terrain type - now uses TerrainType as authority
     private bool IsNodeWalkable(GridNode node)
     {
-        if (node?.terrainType == null)
+        if (node == null || node.terrainType == null)
         {
             Debug.LogWarning($"Node at {node?.WorldPosition} has no terrain type assigned!");
-            return false; // Default to not walkable if no terrain type
+            return false;
         }
 
-        return node.terrainType.Walkable;
+        return node.terrainType.Walkable && !node.IsOccupied; //  Check for buildings too
     }
 
     //heuristic function to calculate the Manhattan distance between two nodes

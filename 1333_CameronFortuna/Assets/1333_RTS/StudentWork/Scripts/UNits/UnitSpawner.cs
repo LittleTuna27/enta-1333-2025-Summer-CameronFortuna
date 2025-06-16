@@ -1,0 +1,56 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UnitSpawner : MonoBehaviour
+{
+    [Header("Spawner Setup")]
+    [SerializeField] private GameObject unitPrefab;
+    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private Transform rallyPoint;
+
+    [Header("References")]
+    [SerializeField] private GridManager gridManager;
+    [SerializeField] private AStartPathfinding pathfindingLogic;
+    [SerializeField] private UnitType unitType; // Optional: you can define unit stats via ScriptableObject
+    [SerializeField] private PathFinderVisulization pathVis; // Optional: for showing path on spawn
+    [SerializeField] private int armyID = 0;
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1)) // Press 1 to spawn a unit
+        {
+            SpawnUnit();
+        }
+    }
+
+    public void SpawnUnit()
+    {
+        if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
+        {
+            Debug.LogError("Missing references for spawning!");
+            return;
+        }
+
+        GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
+        UnitInstance unit = newUnit.GetComponent<UnitInstance>();
+
+        if (unit == null)
+        {
+            Debug.LogError("Spawned unit prefab is missing UnitInstance!");
+            return;
+        }
+
+        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, armyID);
+
+        // Send unit to rally point
+        GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);
+        if (targetNode != null)
+        {
+            unit.MoveTo(targetNode);
+        }
+        else
+        {
+            Debug.LogWarning("Could not find rally node.");
+        }
+    }
+}
