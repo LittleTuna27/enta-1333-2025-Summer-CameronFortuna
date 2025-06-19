@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+
     [SerializeField] private GridSettings gridSettings;
     [SerializeField] private TerrainType defaultTerrainType;
     [SerializeField] private List<TerrainType> terrainTypes = new();
@@ -15,6 +16,15 @@ public class GridManager : MonoBehaviour
     private GridNode[,] gridNodes;
     [SerializeField] private List<GridNode> allNodes = new();
     public bool IsInitialized { get; private set; } = false;
+
+    void Awake()
+    {
+        if (!IsInitialized)
+        {
+            InitializeGrid();
+        }
+    }
+
 
     public void InitializeGrid()
     {
@@ -48,7 +58,6 @@ public class GridManager : MonoBehaviour
 
         IsInitialized = true;
     }
-
     private void OnDrawGizmos()
     {
         if (gridNodes == null || gridSettings == null) return;

@@ -14,21 +14,6 @@ public class AStartPathfinding : Pathfinding_Class
     {
         ClearVisualization(); // Clear any previous visualization data
 
-        // Validate start and end nodes
-        if (!IsNodeWalkable(start))
-        {
-            Debug.LogWarning("Start node is not walkable!");
-            searchedNodes = new List<GridNode>();
-            return new List<GridNode>();
-        }
-
-        if (!IsNodeWalkable(end))
-        {
-            Debug.LogWarning("End node is not walkable!");
-            searchedNodes = new List<GridNode>();
-            return new List<GridNode>();
-        }
-
         // A* algorithm initialization
         List<GridNode> openSet = new() { start }; // Open set starts with the start node
         HashSet<GridNode> closedSet = new(); // Set for processed nodes

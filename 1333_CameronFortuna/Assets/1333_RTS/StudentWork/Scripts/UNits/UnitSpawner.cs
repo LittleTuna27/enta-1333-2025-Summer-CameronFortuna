@@ -13,16 +13,26 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private AStartPathfinding pathfindingLogic;
     [SerializeField] private UnitType unitType; // Optional: you can define unit stats via ScriptableObject
-    [SerializeField] private PathFinderVisulization pathVis; // Optional: for showing path on spawn
+    [SerializeField] private PathFinderVisualization pathVis; // Optional: for showing path on spawn
     [SerializeField] private int armyID = 0;
+    private void Start()
+    {
+        if (gridManager == null)
+            gridManager = FindAnyObjectByType<GridManager>();
+
+        if (pathfindingLogic == null)
+            pathfindingLogic = FindAnyObjectByType<AStartPathfinding>();
+
+        if (pathVis == null)
+            pathVis = FindAnyObjectByType<PathFinderVisualization>();
+    }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) // Press 1 to spawn a unit
+        if (Input.GetKeyDown(KeyCode.Alpha9)) // Press 1 to spawn a unit
         {
             SpawnUnit();
         }
     }
-
     public void SpawnUnit()
     {
         if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
@@ -33,12 +43,6 @@ public class UnitSpawner : MonoBehaviour
 
         GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
         UnitInstance unit = newUnit.GetComponent<UnitInstance>();
-
-        if (unit == null)
-        {
-            Debug.LogError("Spawned unit prefab is missing UnitInstance!");
-            return;
-        }
 
         unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, armyID);
 

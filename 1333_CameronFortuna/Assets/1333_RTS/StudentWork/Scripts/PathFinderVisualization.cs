@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathFinderVisulization : MonoBehaviour
+public class PathFinderVisualization : MonoBehaviour
 {
     [SerializeField] private AStartPathfinding pathfindingLogic; // reference to the A* logic (used only for ClearVisualization)
 

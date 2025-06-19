@@ -50,7 +50,7 @@ MonoBehaviour:
   unitSkin: {fileID: 4961549647914193744}
   hurtParticles: {fileID: 0}
   pathFinderVisulization: {fileID: 0}
-  state: 0
+  armyID: 0
 --- !u!1001 &4961549647919334464
 PrefabInstance:
   m_ObjectHideFlags: 0

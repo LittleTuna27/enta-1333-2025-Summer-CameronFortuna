@@ -7,7 +7,7 @@ public class UnitInstance : UnitBase
     [SerializeField] private Animator animator;
     [SerializeField] private SkinnedMeshRenderer unitSkin;
     [SerializeField] private ParticleSystem hurtParticles;
-    [SerializeField] private PathFinderVisulization pathFinderVisulization;
+    [SerializeField] private PathFinderVisualization pathFinderVisulization;
 
     [Header("Army Settings")]
     [SerializeField] private int armyID = 0; // The army this unit belongs to
@@ -53,10 +53,15 @@ public class UnitInstance : UnitBase
         {
             Debug.LogWarning("UnitSelectionManager.Instance is null!");
         }
-    }
 
+    }
+    private void Update()
+    {
+        if (state == UnitState.Moving)
+            DoMove();
+    }
     //setting up the pathfinding, visuals, and team context for each unit
-    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisulization pathFinderVis, int armyID = 0)
+    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID = 0)
     {
         this.pathfinder = pathfinder;
         this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();

@@ -15,7 +15,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
     [Header("Systems")]
     public AStartPathfinding pathfinder;
     public GridManager gridManager;
-    public PathFinderVisulization visualizer;
+    public PathFinderVisualization visualizer;
 
     [Header("Visual Settings")]
     public Material[] teamMaterials; // Array of materials indexed by army ID

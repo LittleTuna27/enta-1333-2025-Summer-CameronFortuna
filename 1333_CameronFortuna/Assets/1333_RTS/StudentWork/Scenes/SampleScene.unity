@@ -205,7 +205,7 @@ GameObject:
   - component: {fileID: 123884184}
   - component: {fileID: 123884185}
   m_Layer: 0
-  m_Name: PathfindingVisulizer
+  m_Name: PathFinderVisualization
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -235,7 +235,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 123884183}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ece8103f5c0a5d34bb21c8cb15bc7a32, type: 3}
+  m_Script: {fileID: 11500000, guid: fb2fbd0b523853f4f8789372bac4c102, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pathfindingLogic: {fileID: 2084382706}
@@ -712,7 +712,7 @@ MonoBehaviour:
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
   pathfinder: {fileID: 2084382706}
   gridManager: {fileID: 2138901354}
-  visualizer: {fileID: 123884185}
+  visualizer: {fileID: 0}
   teamMaterials:
   - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
 --- !u!4 &458632821
@@ -1074,8 +1074,8 @@ Transform:
   m_GameObject: {fileID: 1019072990}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.5, y: -1, z: 9.5}
-  m_LocalScale: {x: 2, y: 1, z: 2}
+  m_LocalPosition: {x: 20, y: -1, z: 20}
+  m_LocalScale: {x: 4, y: 1, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1175,7 +1175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 2138901354}
   unitManager: {fileID: 0}
-  pathFinder: {fileID: 123884185}
+  pathFinder: {fileID: 0}
   pathfindingLogic: {fileID: 2084382706}
   currentTeamManager: {fileID: 458632820}
   EnemyTeamManager: {fileID: 1745796420}
