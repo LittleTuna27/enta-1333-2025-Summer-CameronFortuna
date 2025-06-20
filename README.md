@@ -34,3 +34,6 @@ enter building Mode
 
 Key: O 
 move towarads enemy
+
+Key: 9 
+Spawn unit from barracks
