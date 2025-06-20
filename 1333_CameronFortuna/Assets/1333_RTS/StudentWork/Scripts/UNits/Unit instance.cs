@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.GraphView;
 
 public class UnitInstance : UnitBase
 {
@@ -12,6 +14,8 @@ public class UnitInstance : UnitBase
     [Header("Army Settings")]
     [SerializeField] private int armyID = 0; // The army this unit belongs to
     private CurrentTeamArmyManager armyManager;
+    
+    private Vector2 Position;
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
@@ -26,6 +30,15 @@ public class UnitInstance : UnitBase
     public List<GridNode> CurrentPath => currentPath;
     public int ArmyID => armyID;
     public CurrentTeamArmyManager ArmyManager => armyManager;
+
+    public CurrentTeamArmyManager enemyArmyManager;
+
+    public GridNode currentNodeUnitON;
+
+
+    public int AttackRange => unitType?.Range ?? 1;
+
+    public UnitBase CurrentTarget;
 
     //showing the state the unit is in
     public UnitState state
@@ -58,7 +71,14 @@ public class UnitInstance : UnitBase
     private void Update()
     {
         if (state == UnitState.Moving)
-            DoMove();
+        { DoMove(); }
+
+        Attackmode();
+
+        if (Input.GetKeyDown(KeyCode.O))
+        { IsThereEnemy();
+        }
+        //SetNodeOccipied();
     }
     //setting up the pathfinding, visuals, and team context for each unit
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID = 0)
@@ -96,6 +116,24 @@ public class UnitInstance : UnitBase
         if (armyManager == null)
         {
             Debug.LogWarning($"{name}: Could not find army manager for Army ID {armyID}");
+        }
+    }
+    private void FindEnemyArmyManager()
+    {
+        // Find army managers that are NOT this unit's army
+        CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
+        foreach (var manager in managers)
+        {
+            if (manager.armyID != armyID) // Different army = enemy
+            {
+                enemyArmyManager = manager;
+                break;
+            }
+        }
+
+        if (enemyArmyManager == null)
+        {
+            Debug.LogWarning($"{name}: Could not find enemy army manager");
         }
     }
 
@@ -220,5 +258,71 @@ public class UnitInstance : UnitBase
             unitSkin.material.color = Color.white;
         }
         Debug.Log($"{name} deselected.");
+    }
+    private void InitializeCombat()
+    {
+        // Find enemy army manager (assuming enemy has different army ID)
+        FindEnemyArmyManager();
+
+        Debug.Log($"{name} combat initialized - Attack Range: {AttackRange}, Damage: {unitType?.Damage ?? 0}");
+    }
+
+    public void IsThereEnemy()
+    {
+        // Add this null check at the beginning
+        if (enemyArmyManager == null)
+        {
+            FindEnemyArmyManager();
+            if (enemyArmyManager == null)
+            {
+                Debug.LogWarning($"{name}: No enemy army manager found!");
+                return;
+            }
+        }
+
+        CurrentTarget = null;
+        float closestDistance = Mathf.Infinity;
+
+        Vector3 myPosition = transform.position;
+
+        for (int i = 0; i < enemyArmyManager.currentlyActiveUnits.Count; i++)
+        {
+            UnitBase enemy = enemyArmyManager.currentlyActiveUnits[i];
+            float distance = Vector3.Distance(myPosition, enemy.transform.position);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                CurrentTarget = enemy;
+            }
+        }
+
+        if (CurrentTarget != null)
+        {
+            GridNode targetNode = gridManager.GetNodeFromWorldPosition(CurrentTarget.transform.position);
+            if (targetNode != null)
+            {
+                MoveTo(targetNode);
+            }
+        }
+    }
+
+    public void Attackmode()
+    {
+        if (CurrentTarget != null)
+        {
+            float distanceToTarget = Vector3.Distance(transform.position, CurrentTarget.transform.position);
+            if (distanceToTarget <= AttackRange)
+            {
+                state = UnitState.Attacking;
+                Debug.Log("is attacking now");
+            }
+        }
+    }
+    public void SetNodeOccipied()
+    {
+         currentNodeUnitON = gridManager.GetNodeFromWorldPosition(CurrentTarget.transform.position);
+            
+        //currentNodeUnitON.IsOccupied = true;
     }
 }
