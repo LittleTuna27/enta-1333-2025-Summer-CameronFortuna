@@ -19,7 +19,9 @@ public class CurrentTeamArmyManager : MonoBehaviour
 
     [Header("Visual Settings")]
     public Material[] teamMaterials; // Array of materials indexed by army ID
-
+    public void Start()
+    {
+    }
     public void SpawnUnit(Vector3 position)
     {
         if (unitPrefab == null)
@@ -68,21 +70,6 @@ public class CurrentTeamArmyManager : MonoBehaviour
 
      
     }
-    void Update()
-    {
-        // Update all units
-        foreach (UnitBase unit in currentlyActiveUnits)
-        {
-            if (unit != null)
-            {
-                unit.PerTick();
-            }
-        }
-
-        // Clean up destroyed units
-        currentlyActiveUnits.RemoveAll(unit => unit == null);
-    }
-
     // Get all units of this army
     public List<UnitInstance> GetArmyUnits()
     {

@@ -429,13 +429,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 5, y: 5, z: -5}
+  m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
+  m_LocalPosition: {x: 5, y: 8, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,7 +712,7 @@ MonoBehaviour:
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
   pathfinder: {fileID: 2084382706}
   gridManager: {fileID: 2138901354}
-  visualizer: {fileID: 0}
+  visualizer: {fileID: 123884185}
   teamMaterials:
   - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
 --- !u!4 &458632821
@@ -1074,7 +1074,7 @@ Transform:
   m_GameObject: {fileID: 1019072990}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20, y: -1, z: 20}
+  m_LocalPosition: {x: 20, y: 0, z: 20}
   m_LocalScale: {x: 4, y: 1, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1693,6 +1693,7 @@ MonoBehaviour:
   visualizer: {fileID: 123884185}
   teamMaterials:
   - {fileID: 2100000, guid: 98a7fdcb4ebb44344b4afe0424d44b82, type: 2}
+  - {fileID: 2100000, guid: 98a7fdcb4ebb44344b4afe0424d44b82, type: 2}
 --- !u!4 &1745796421
 Transform:
   m_ObjectHideFlags: 0
@@ -1737,9 +1738,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 907d7a6ca861f32438ca273050b75273, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSearchGizmos: 1
-  searchedNodeColor: {r: 0, g: 1, b: 1, a: 1}
-  gizmoSize: 0.4
 --- !u!4 &2084382707
 Transform:
   m_ObjectHideFlags: 0

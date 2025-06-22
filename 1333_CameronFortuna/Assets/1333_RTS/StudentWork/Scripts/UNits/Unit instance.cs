@@ -15,7 +15,6 @@ public class UnitInstance : UnitBase
     [SerializeField] private int armyID = 0; // The army this unit belongs to
     private CurrentTeamArmyManager armyManager;
     
-    private Vector2 Position;
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
@@ -81,7 +80,7 @@ public class UnitInstance : UnitBase
         //SetNodeOccipied();
     }
     //setting up the pathfinding, visuals, and team context for each unit
-    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID = 0)
+    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID)
     {
         this.pathfinder = pathfinder;
         this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();
@@ -233,13 +232,6 @@ public class UnitInstance : UnitBase
         }
     }
 
-    //moving the unit every tick
-    public override void PerTick()
-    {
-        if (state == UnitState.Moving)
-            DoMove();
-    }
-
     //selecting the unit
     public void Select()
     {
@@ -259,14 +251,6 @@ public class UnitInstance : UnitBase
         }
         Debug.Log($"{name} deselected.");
     }
-    private void InitializeCombat()
-    {
-        // Find enemy army manager (assuming enemy has different army ID)
-        FindEnemyArmyManager();
-
-        Debug.Log($"{name} combat initialized - Attack Range: {AttackRange}, Damage: {unitType?.Damage ?? 0}");
-    }
-
     public void IsThereEnemy()
     {
         // Add this null check at the beginning
@@ -306,7 +290,6 @@ public class UnitInstance : UnitBase
             }
         }
     }
-
     public void Attackmode()
     {
         if (CurrentTarget != null)
@@ -325,4 +308,5 @@ public class UnitInstance : UnitBase
             
         //currentNodeUnitON.IsOccupied = true;
     }
+
 }

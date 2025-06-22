@@ -18,6 +18,7 @@ public class GroupCommandHandler : MonoBehaviour
                 foreach (var unit in UnitSelectionManager.Instance.selectedUnits)
                 {
                     unit.MoveTo(targetNode); // This triggers A* and starts movement
+                    unit.Attackmode();
                 }
             }
         }

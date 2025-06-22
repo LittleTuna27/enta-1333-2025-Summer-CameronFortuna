@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class AStartPathfinding : Pathfinding_Class
 {
-    [SerializeField] private bool showSearchGizmos = true;
-    [SerializeField] private Color searchedNodeColor = Color.cyan;
-    [SerializeField] private float gizmoSize = 0.4f;
 
     private List<GridNode> searchedNodesForGizmos = new();
 
@@ -35,9 +32,6 @@ public class AStartPathfinding : Pathfinding_Class
 
             openSet.Remove(current);
             closedSet.Add(current);
-
-            if (showSearchGizmos)
-                searchedNodesForGizmos.Add(current);
 
             //check neighbors of the current node
             foreach (GridNode neighbor in gridManager.GetNeighborNodes(current))
@@ -82,20 +76,6 @@ public class AStartPathfinding : Pathfinding_Class
         path.Reverse();
         return path;
     }
-
-    //unity Gizmos function for visualizing the search process in the editor
-    private void OnDrawGizmos()
-    {
-        if (!showSearchGizmos || searchedNodesForGizmos == null) return;
-
-        Gizmos.color = searchedNodeColor;
-        foreach (GridNode node in searchedNodesForGizmos)
-        {
-            if (node != null)
-                Gizmos.DrawCube(node.WorldPosition + Vector3.up * 0.1f, Vector3.one * gizmoSize);
-        }
-    }
-
     //clears the list of nodes used for visualization
     public void ClearVisualization()
     {

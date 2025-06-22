@@ -14,7 +14,7 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private AStartPathfinding pathfindingLogic;
     [SerializeField] private UnitType unitType; // Optional: you can define unit stats via ScriptableObject
     [SerializeField] private PathFinderVisualization pathVis; // Optional: for showing path on spawn
-    [SerializeField] private int armyID = 0;
+    
     private void Start()
     {
         if (gridManager == null)
@@ -30,10 +30,10 @@ public class UnitSpawner : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha9)) // Press 1 to spawn a unit
         {
-            SpawnUnit();
+            SpawnUnitPlayer();
         }
     }
-    public void SpawnUnit()
+    public void SpawnUnitPlayer()
     {
         if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
         {
@@ -44,7 +44,31 @@ public class UnitSpawner : MonoBehaviour
         GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
         UnitInstance unit = newUnit.GetComponent<UnitInstance>();
 
-        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, armyID);
+        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, 0);
+
+        // Send unit to rally point
+        GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);
+        if (targetNode != null)
+        {
+            unit.MoveTo(targetNode);
+        }
+        else
+        {
+            Debug.LogWarning("Could not find rally node.");
+        }
+    }
+    public void SpawnUnitEnemy()
+    {
+        if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
+        {
+            Debug.LogError("Missing references for spawning!");
+            return;
+        }
+
+        GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
+        UnitInstance unit = newUnit.GetComponent<UnitInstance>();
+
+        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, 1);
 
         // Send unit to rally point
         GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);

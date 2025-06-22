@@ -56,7 +56,6 @@ public class UnitSelectionBox : MonoBehaviour
             }
         }
     }
-
     void DrawVisual()
     {
         Vector2 boxStart = startPosition;
@@ -74,7 +73,6 @@ public class UnitSelectionBox : MonoBehaviour
         selectionBox.yMin = Mathf.Min(startPosition.y, Input.mousePosition.y);
         selectionBox.yMax = Mathf.Max(startPosition.y, Input.mousePosition.y);
     }
-
     void SelectUnits()
     {
         foreach (var unit in UnitSelectionManager.Instance.allUnitsList)
