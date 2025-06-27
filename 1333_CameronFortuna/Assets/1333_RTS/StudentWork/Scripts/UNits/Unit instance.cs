@@ -14,7 +14,7 @@ public class UnitInstance : UnitBase
     [Header("Army Settings")]
     [SerializeField] private int armyID = 0; // The army this unit belongs to
     private CurrentTeamArmyManager armyManager;
-    
+
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
@@ -34,10 +34,20 @@ public class UnitInstance : UnitBase
 
     public GridNode currentNodeUnitON;
 
+    [Header("Combat Settings")]
+    [SerializeField] private float attackCooldown = 2f; // Attack every 2 seconds
 
+    private float lastAttackTime = 0f;
+    
+
+    // Properties to get values from UnitType
+    public int AttackDamage => unitType?.Damage ?? 0;
+    public int MaxHealth => unitType?.MaxHp ?? 100;
+    public int Defense => unitType?.Defence ?? 0;
     public int AttackRange => unitType?.Range ?? 1;
 
     public UnitBase CurrentTarget;
+    public int currentHealth;
 
     //showing the state the unit is in
     public UnitState state
@@ -65,8 +75,14 @@ public class UnitInstance : UnitBase
         {
             Debug.LogWarning("UnitSelectionManager.Instance is null!");
         }
+        InitializeHealth();
 
     }
+    private void InitializeHealth()
+    {
+        currentHealth = MaxHealth;
+    }
+
     private void Update()
     {
         if (state == UnitState.Moving)
@@ -75,11 +91,11 @@ public class UnitInstance : UnitBase
         Attackmode();
 
         if (Input.GetKeyDown(KeyCode.O))
-        { IsThereEnemy();
+        {
+            IsThereEnemy();
         }
         //SetNodeOccipied();
     }
-    //setting up the pathfinding, visuals, and team context for each unit
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID)
     {
         this.pathfinder = pathfinder;
@@ -88,17 +104,20 @@ public class UnitInstance : UnitBase
         this.pathFinderVisulization = pathFinderVis;
         this.armyID = armyID;
 
+        // Initialize health based on UnitType
+        currentHealth = MaxHealth;
+
         // Find the army manager for this army ID
         FindArmyManager();
 
-        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}, ArmyID: {this.armyID}");
+        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}, " +
+                  $"Health: {currentHealth}/{MaxHealth}, Damage: {AttackDamage}, Defense: {Defense}, ArmyID: {this.armyID}");
 
         //reference check
         if (this.pathfinder == null) Debug.LogError($"{name}: pathfinder is null!");
         if (this.unitType == null) Debug.LogError($"{name}: unitType is null!");
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
-
     private void FindArmyManager()
     {
         // Find the army manager that matches this unit's army ID
@@ -290,23 +309,160 @@ public class UnitInstance : UnitBase
             }
         }
     }
+    public UnitBase AttackTarget { get; private set; }
+
+    public void SetAttackTarget(UnitBase target)
+    {
+        AttackTarget = target;
+        CurrentTarget = target; // Also set as current target for existing attack logic
+
+        // Move towards the target
+        if (target != null)
+        {
+            GridNode targetNode = gridManager.GetNodeFromWorldPosition(target.transform.position);
+            if (targetNode != null)
+            {
+                MoveTo(targetNode);
+                state = UnitState.Moving;
+            }
+        }
+    }
+
+    public void ClearAttackTarget()
+    {
+        AttackTarget = null;
+        CurrentTarget = null;
+        // Optionally change state back to idle if not doing anything else
+        if (state == UnitState.Attacking)
+        {
+            state = UnitState.Idle;
+        }
+    }
+
     public void Attackmode()
     {
-        if (CurrentTarget != null)
+        // Check if we have a specific attack target
+        if (AttackTarget != null)
+        {
+            // Check if target is still valid (not destroyed)
+            if (AttackTarget == null || AttackTarget.gameObject == null)
+            {
+                ClearAttackTarget();
+                return;
+            }
+
+            float distanceToTarget = Vector3.Distance(transform.position, AttackTarget.transform.position);
+
+            if (distanceToTarget <= AttackRange)
+            {
+                state = UnitState.Attacking;
+
+                // Check if enough time has passed since last attack
+                if (Time.time >= lastAttackTime + attackCooldown)
+                {
+                    PerformAttack(AttackTarget);
+                    lastAttackTime = Time.time;
+                }
+            }
+            else
+            {
+                // Target is out of range, keep moving towards it
+                if (state != UnitState.Moving)
+                {
+                    GridNode targetNode = gridManager.GetNodeFromWorldPosition(AttackTarget.transform.position);
+                    if (targetNode != null)
+                    {
+                        MoveTo(targetNode);
+                    }
+                }
+            }
+        }
+        // Keep your existing logic for auto-finding enemies as fallback
+        else if (CurrentTarget != null)
         {
             float distanceToTarget = Vector3.Distance(transform.position, CurrentTarget.transform.position);
             if (distanceToTarget <= AttackRange)
             {
                 state = UnitState.Attacking;
-                Debug.Log("is attacking now");
+
+                // Check cooldown for auto-found targets too
+                if (Time.time >= lastAttackTime + attackCooldown)
+                {
+                    PerformAttack(CurrentTarget);
+                    lastAttackTime = Time.time;
+                }
             }
         }
     }
-    public void SetNodeOccipied()
+    private void PerformAttack(UnitBase target)
     {
-         currentNodeUnitON = gridManager.GetNodeFromWorldPosition(CurrentTarget.transform.position);
-            
-        //currentNodeUnitON.IsOccupied = true;
+        if (target == null) return;
+
+        Debug.Log($"{name} attacks {target.name} for {AttackDamage} damage!");
+
+        // Deal damage (you'll need to implement health system)
+        UnitInstance targetUnit = target as UnitInstance;
+        if (targetUnit != null)
+        {
+            targetUnit.TakeDamage(AttackDamage);
+        }
+    }
+    public void TakeDamage(int damage)
+    {
+        // Calculate actual damage after defense
+        int actualDamage = Mathf.Max(1, damage - Defense); // Minimum 1 damage
+        currentHealth -= actualDamage;
+
+        Debug.Log($"{name} took {actualDamage} damage ({damage} - {Defense} defense). Health: {currentHealth}/{MaxHealth}");
+
+        // Check if unit is dead
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
     }
 
+    public void Die()
+    {
+        Debug.Log($"{name} has died!");
+
+        // Remove from selection if selected
+        if (UnitSelectionManager.Instance.selectedUnits.Contains(this))
+        {
+            UnitSelectionManager.Instance.selectedUnits.Remove(this);
+        }
+
+        // Remove from army manager
+        if (armyManager != null)
+        {
+            armyManager.currentlyActiveUnits.Remove(this);
+        }
+
+        // Remove from all units list
+        if (UnitSelectionManager.Instance.allUnitsList.Contains(this))
+        {
+            UnitSelectionManager.Instance.allUnitsList.Remove(this);
+        }
+
+        // Optional: Play death animation/effects before destroying
+        Destroy(gameObject);
+    }
+    void OnDrawGizmosSelected()
+    {
+        if (AttackTarget != null)
+        {
+            // Draw attack range
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, AttackRange);
+            Gizmos.DrawLine(transform.position, AttackTarget.transform.position);
+
+            // Show cooldown status
+            float cooldownProgress = (Time.time - lastAttackTime) / attackCooldown;
+            if (cooldownProgress < 1f)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireCube(transform.position + Vector3.up * 2f, Vector3.one * 0.5f);
+            }
+        }
+    }
 }

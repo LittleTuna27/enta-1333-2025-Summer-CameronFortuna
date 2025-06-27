@@ -97,6 +97,14 @@ public class BuildingPlacementManager : MonoBehaviour
         GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, Quaternion.identity);
         newBuilding.transform.localScale = currentSelectedBuilding.Scale;
 
+        // Activate the building after placement
+        DefensiveBuilding defensiveBuilding = newBuilding.GetComponent<DefensiveBuilding>();
+        if (defensiveBuilding != null)
+        {
+            defensiveBuilding.OnBuildingPlaced();
+            Debug.Log("Defensive building activated after placement");
+        }
+
         for (int x = 0; x < currentSelectedBuilding.BuildingWidth; x++)
         {
             for (int y = 0; y < currentSelectedBuilding.BuildingDepth; y++)
