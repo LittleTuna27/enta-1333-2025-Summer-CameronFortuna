@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6902856429761495534}
   - component: {fileID: -7656884980748513539}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Tower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35f482f23c08c6449a381baed7ea050f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerDamage: 5
+  towerDamage: 25
   attackCooldown: 3
-  attackRange: 10
+  attackRange: 20
   CurrentTarget: {fileID: 0}
   ArmyID: 0
 --- !u!1001 &3587651365309960796
@@ -101,6 +101,10 @@ PrefabInstance:
     - target: {fileID: 8402595383202412847, guid: ba5f322348b0d55439188478a44a882f, type: 3}
       propertyPath: m_Name
       value: Tower_A
+      objectReference: {fileID: 0}
+    - target: {fileID: 8402595383202412847, guid: ba5f322348b0d55439188478a44a882f, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

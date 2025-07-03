@@ -14,30 +14,28 @@ public class GroupCommandHandler : MonoBehaviour
             HandleRightClick();
         }
     }
-
     private void HandleRightClick()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // Exclude DefensiveBuildings layer from raycasts
+        int layerMask = ~LayerMask.GetMask("DefensiveBuildings");
 
-        // First check if we hit a unit directly
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
         {
             // Check if we hit a unit
             UnitInstance hitUnit = hit.collider.GetComponent<UnitInstance>();
             if (hitUnit == null)
             {
-                // Check parent objects in case hitbox is a child
                 hitUnit = hit.collider.GetComponentInParent<UnitInstance>();
             }
 
             if (hitUnit != null)
             {
-                // We clicked on a unit - check if it's an enemy
                 HandleUnitClick(hitUnit);
             }
             else
             {
-                // We clicked on terrain - move to location
                 HandleTerrainClick(hit.point);
             }
         }

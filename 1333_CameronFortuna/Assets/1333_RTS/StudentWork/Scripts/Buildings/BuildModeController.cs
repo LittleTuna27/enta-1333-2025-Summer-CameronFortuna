@@ -40,18 +40,46 @@ public class BuildModeController : MonoBehaviour
         }
     }
 
-    private void ToggleBuildMode()
+    public void ToggleBuildMode()
     {
         IsInBuildMode = !IsInBuildMode;
         Debug.Log("Build Mode: " + (IsInBuildMode ? "Enabled" : "Disabled"));
         UpdateUI();
     }
 
-    private void UpdateUI()
+    public void UpdateUI()
     {
         if (buildModeText != null)
         {
             buildModeText.text = "Build Mode: " + (IsInBuildMode ? "Enabled" : "Disabled");
+        }
+    }
+
+    public void EnableBuildMode()
+    {
+        if (!IsInBuildMode)
+        {
+            ToggleBuildMode();
+        }
+    }
+
+    public void DisableBuildMode()
+    {
+        if (IsInBuildMode)
+        {
+            ToggleBuildMode();
+        }
+    }
+
+    public void SetBuildMode(bool enabled)
+    {
+        if (enabled && !IsInBuildMode)
+        {
+            ToggleBuildMode();
+        }
+        else if (!enabled && IsInBuildMode)
+        {
+            ToggleBuildMode();
         }
     }
 }

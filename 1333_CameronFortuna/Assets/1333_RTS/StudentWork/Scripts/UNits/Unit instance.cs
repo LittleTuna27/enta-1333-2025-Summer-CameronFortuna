@@ -50,6 +50,7 @@ public class UnitInstance : UnitBase
     public int currentHealth;
 
     //showing the state the unit is in
+
     public UnitState state
     {
         get => _state;
@@ -59,6 +60,9 @@ public class UnitInstance : UnitBase
             {
                 Debug.Log($"{name} state changed from {_state} to {value}");
                 _state = value;
+
+                // Update animator based on state
+                UpdateAnimator();
             }
         }
     }
@@ -240,7 +244,7 @@ public class UnitInstance : UnitBase
         if (Vector3.Distance(transform.position, target) < 0.1f)
         {
             pathIndex++;
-            Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
+            //Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
         }
         //once the unit reaches the end of the list stop moving
         if (pathIndex >= currentPath.Count)
@@ -338,7 +342,6 @@ public class UnitInstance : UnitBase
             state = UnitState.Idle;
         }
     }
-
     public void Attackmode()
     {
         // Check if we have a specific attack target
@@ -355,6 +358,7 @@ public class UnitInstance : UnitBase
 
             if (distanceToTarget <= AttackRange)
             {
+                // Target is in range - we should be in attacking state
                 state = UnitState.Attacking;
 
                 // Check if enough time has passed since last attack
@@ -377,12 +381,13 @@ public class UnitInstance : UnitBase
                 }
             }
         }
-        // Keep your existing logic for auto-finding enemies as fallback
+        // Keep your existing logic for auto-found enemies as fallback
         else if (CurrentTarget != null)
         {
             float distanceToTarget = Vector3.Distance(transform.position, CurrentTarget.transform.position);
             if (distanceToTarget <= AttackRange)
             {
+                // Target is in range - we should be in attacking state
                 state = UnitState.Attacking;
 
                 // Check cooldown for auto-found targets too
@@ -393,18 +398,32 @@ public class UnitInstance : UnitBase
                 }
             }
         }
+        else
+        {
+            // NO TARGET - Stop attacking!
+            if (state == UnitState.Attacking)
+            {
+                state = UnitState.Idle;
+            }
+        }
     }
     private void PerformAttack(UnitBase target)
     {
+
         if (target == null) return;
 
         Debug.Log($"{name} attacks {target.name} for {AttackDamage} damage!");
 
-        // Deal damage (you'll need to implement health system)
+        // Deal damage
         UnitInstance targetUnit = target as UnitInstance;
         if (targetUnit != null)
         {
             targetUnit.TakeDamage(AttackDamage);
+        }
+
+        if (target == null)
+        {
+            state = UnitState.Idle;
         }
     }
     public void TakeDamage(int damage)
@@ -465,4 +484,29 @@ public class UnitInstance : UnitBase
             }
         }
     }
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        // Reset movement and idle states
+        animator.SetBool("IsMoving", false);
+        animator.SetBool("IsAttacking", false);
+        animator.SetBool("IsIdle", false);
+
+
+        // Set the appropriate state
+        switch (_state)
+        {
+            case UnitState.Moving:
+                animator.SetBool("IsMoving", true);
+                break;
+            case UnitState.Attacking:
+                animator.SetBool("IsAttacking", true);
+                break;
+            case UnitState.Idle:
+                animator.SetBool("IsIdle", true);
+                break;
+        }
+    }
+ 
 }

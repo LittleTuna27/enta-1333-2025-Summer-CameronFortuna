@@ -12,6 +12,7 @@ public class BuildingTypesSO : ScriptableObject
 [System.Serializable]
 public class BuildingData
 {
+    public float BuildingHealth = 100;
     public string BuildingName;
     public Sprite BuildingIcon;
     public GameObject BuildingPrefab;

@@ -12,22 +12,28 @@ public class DefensiveBuilding : MonoBehaviour
     [Header("Debug Info")]
     public UnitInstance CurrentTarget;
 
+    [Header("Army Settings")]
+    [SerializeField] private int ArmyID = 0; // Make sure this is set correctly in inspector
+
     private float lastAttackTime = 0.0f;
     private List<UnitInstance> unitsInRange = new List<UnitInstance>();
     private SphereCollider rangeCollider;
-
-    [SerializeField] private int ArmyID;
+    private bool isActive = false;
 
     void Start()
     {
-        // Don't setup range collider in Start - wait for placement
+        // Set this building to the DefensiveBuildings layer
+        gameObject.layer = LayerMask.NameToLayer("DefensiveBuildings");
+        Debug.Log($"Tower {gameObject.name} set to layer: {gameObject.layer}");
     }
 
     void Update()
     {
-        // Only operate if the building has been placed and activated
-        if (rangeCollider == null || !rangeCollider.enabled)
-            return;
+        // Only operate if the building is active
+        if (!isActive) return;
+
+        // Clean up null references in unitsInRange
+        unitsInRange.RemoveAll(unit => unit == null);
 
         // Find a target if we don't have one
         if (CurrentTarget == null)
@@ -42,11 +48,12 @@ public class DefensiveBuilding : MonoBehaviour
         }
     }
 
-    // Call this method when the building is successfully placed
     public void OnBuildingPlaced()
     {
+        isActive = true;
         SetupRangeCollider();
-        Debug.Log("Defensive building activated and ready for combat");
+        Debug.Log($"Defensive building {gameObject.name} has been placed and activated");
+        Debug.Log($"Tower ArmyID: {ArmyID}, Attack Range: {attackRange}, Damage: {towerDamage}");
     }
 
     private void SetupRangeCollider()
@@ -61,26 +68,41 @@ public class DefensiveBuilding : MonoBehaviour
         // Configure as trigger with specified range
         rangeCollider.isTrigger = true;
         rangeCollider.radius = attackRange;
-        rangeCollider.enabled = true;
 
-        Debug.Log($"Tower range collider activated with radius: {attackRange}");
+        Debug.Log($"Tower range collider set up with radius: {attackRange}");
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!isActive) return;
+
+        Debug.Log($"Trigger Enter detected: {other.name} on layer {other.gameObject.layer}");
+
         UnitInstance unit = other.GetComponent<UnitInstance>();
-        Debug.Log($"Collider detected: {other.name}");
 
-        if (unit != null && !unitsInRange.Contains(unit) && unit.ArmyID != ArmyID)
+        if (unit != null)
         {
-            unitsInRange.Add(unit);
-            Debug.Log($"Unit {unit.name} entered tower range");
+            Debug.Log($"Unit found: {unit.name}, Unit ArmyID: {unit.ArmyID}, Tower ArmyID: {ArmyID}");
 
-            // If we don't have a target, set this as our target
-            if (CurrentTarget == null)
+            if (!unitsInRange.Contains(unit) && unit.ArmyID != ArmyID)
             {
-                SetTarget(unit);
+                unitsInRange.Add(unit);
+                Debug.Log($"Unit {unit.name} entered tower range (Enemy unit detected!)");
+
+                // If we don't have a target, set this as our target
+                if (CurrentTarget == null)
+                {
+                    SetTarget(unit);
+                }
             }
+            else if (unit.ArmyID == ArmyID)
+            {
+                Debug.Log($"Unit {unit.name} is friendly (same ArmyID), ignoring");
+            }
+        }
+        else
+        {
+            Debug.Log($"No UnitInstance component found on {other.name}");
         }
     }
 
@@ -145,33 +167,75 @@ public class DefensiveBuilding : MonoBehaviour
         // Check if target still exists
         if (CurrentTarget == null)
         {
+            Debug.Log("No current target");
             return;
         }
 
         // Check if enough time has passed since last attack
         if (Time.time < lastAttackTime + attackCooldown)
         {
-            return;
+            return; // Still on cooldown
         }
 
-        // Verify target is still in range (in case they moved very fast)
+        // Verify target is still in range
         float distanceToTarget = Vector3.Distance(transform.position, CurrentTarget.transform.position);
         if (distanceToTarget > attackRange)
         {
-            Debug.Log("Target moved out of range");
+            Debug.Log($"Target {CurrentTarget.name} moved out of range (distance: {distanceToTarget})");
             ClearTarget();
             return;
         }
 
         // Attack the target
-        Debug.Log($"Tower attacking {CurrentTarget.name} for {towerDamage} damage");
-        CurrentTarget.TakeDamage(towerDamage);
-        lastAttackTime = Time.time;
+        Debug.Log($"Tower attacking {CurrentTarget.name} for {towerDamage} damage!");
+
+        // Check if the target has a TakeDamage method
+        if (CurrentTarget.GetComponent<UnitInstance>() != null)
+        {
+            CurrentTarget.TakeDamage(towerDamage);
+            lastAttackTime = Time.time;
+        }
+        else
+        {
+            Debug.LogError($"Target {CurrentTarget.name} doesn't have a valid TakeDamage method!");
+        }
 
         // Check if target was destroyed by our attack
         if (CurrentTarget == null || CurrentTarget.gameObject == null)
         {
+            Debug.Log("Target destroyed by attack");
             ClearTarget();
+        }
+    }
+
+    // Debug method to manually test attacking
+    [ContextMenu("Force Attack Nearest")]
+    public void ForceAttackNearest()
+    {
+        if (unitsInRange.Count > 0)
+        {
+            SetTarget(unitsInRange[0]);
+            lastAttackTime = 0; // Reset cooldown
+            AttackCurrentTarget();
+        }
+        else
+        {
+            Debug.Log("No units in range to attack");
+        }
+    }
+
+    // Debug visualization
+    private void OnDrawGizmosSelected()
+    {
+        // Draw attack range
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        // Draw line to current target
+        if (CurrentTarget != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, CurrentTarget.transform.position);
         }
     }
 }

@@ -139,7 +139,6 @@ MonoBehaviour:
   pathfindingLogic: {fileID: 0}
   unitType: {fileID: 11400000, guid: 5f7fcc837c993254590de558c091a621, type: 2}
   pathVis: {fileID: 0}
-  armyID: 0
 --- !u!1 &5863456867271665995
 GameObject:
   m_ObjectHideFlags: 0
