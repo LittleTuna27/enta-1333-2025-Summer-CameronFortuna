@@ -403,6 +403,7 @@ public class UnitInstance : UnitBase, IDamageable
     {
         if (!IsAlive) return;
 
+
         // Calculate actual damage after defense
         int actualDamage = Mathf.Max(1, damage - Defense);
         int oldHealth = currentHealth;

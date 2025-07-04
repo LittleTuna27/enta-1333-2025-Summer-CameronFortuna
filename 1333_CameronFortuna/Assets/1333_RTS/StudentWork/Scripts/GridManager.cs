@@ -129,40 +129,112 @@ public class GridManager : MonoBehaviour
 
         return new Vector2Int(x, y);
     }
-    public GridNode GetNearestWalkableNode(Vector3 position)
+    public GridNode GetNearestWalkableNode(Vector3 position, int maxSearchRadius = 10)
     {
         GridNode originNode = GetNodeFromWorldPosition(position);
-        if (originNode != null && originNode.walkable)
+
+        // If we can't even get a node at this position, expand search immediately
+        if (originNode == null)
+        {
+            Debug.LogWarning($"GetNearestWalkableNode: No node found at position {position}");
+            return FindWalkableNodeInArea(position, maxSearchRadius);
+        }
+
+        // If the origin node is walkable and not occupied, return it
+        if (originNode.walkable && !originNode.IsOccupied)
             return originNode;
 
         // BFS to find nearest walkable node
         Queue<GridNode> open = new Queue<GridNode>();
         HashSet<GridNode> visited = new HashSet<GridNode>();
 
-        if (originNode != null)
-            open.Enqueue(originNode);
-        else
-            return null;
-
+        open.Enqueue(originNode);
         visited.Add(originNode);
 
-        while (open.Count > 0)
+        int searchRadius = 0;
+        while (open.Count > 0 && searchRadius < maxSearchRadius)
         {
-            GridNode current = open.Dequeue();
+            int currentLevelSize = open.Count;
+            searchRadius++;
 
-            foreach (GridNode neighbor in GetNeighborNodes(current))
+            // Process all nodes at current radius level
+            for (int i = 0; i < currentLevelSize; i++)
             {
-                if (!visited.Contains(neighbor))
-                {
-                    if (neighbor.walkable)
-                        return neighbor;
+                GridNode current = open.Dequeue();
 
-                    visited.Add(neighbor);
-                    open.Enqueue(neighbor);
+                foreach (GridNode neighbor in GetNeighborNodes(current))
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+
+                        // Check if this neighbor is walkable
+                        if (neighbor.walkable && !neighbor.IsOccupied)
+                        {
+                            Debug.Log($"Found walkable node at distance {searchRadius} from {position}");
+                            return neighbor;
+                        }
+
+                        // Add to queue for next level search
+                        open.Enqueue(neighbor);
+                    }
                 }
             }
         }
 
-        return null; // No walkable node found
+        Debug.LogWarning($"GetNearestWalkableNode: No walkable node found within {maxSearchRadius} radius of {position}");
+        return null;
+    }
+    private GridNode FindWalkableNodeInArea(Vector3 centerPosition, int maxRadius)
+    {
+        // Search in expanding squares around the center position
+        for (int radius = 1; radius <= maxRadius; radius++)
+        {
+            // Check all positions in the current radius
+            for (int x = -radius; x <= radius; x++)
+            {
+                for (int z = -radius; z <= radius; z++)
+                {
+                    // Skip positions we've already checked in smaller radii
+                    if (Mathf.Abs(x) < radius && Mathf.Abs(z) < radius)
+                        continue;
+
+                    Vector3 checkPosition = centerPosition + new Vector3(x * nodeSize, 0, z * nodeSize);
+                    GridNode node = GetNodeFromWorldPosition(checkPosition);
+
+                    if (node != null && node.walkable && !node.IsOccupied)
+                    {
+                        Debug.Log($"Found walkable node at {checkPosition} (radius {radius})");
+                        return node;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Method to get all nodes occupied by a building (useful for debugging)
+    public List<GridNode> GetNodesInArea(Vector3 centerPosition, int width, int height)
+    {
+        List<GridNode> nodes = new List<GridNode>();
+        Vector2Int gridPos = GetGridPositionFromWorld(centerPosition);
+
+        int halfWidth = width / 2;
+        int halfHeight = height / 2;
+
+        for (int x = gridPos.x - halfWidth; x <= gridPos.x + halfWidth; x++)
+        {
+            for (int y = gridPos.y - halfHeight; y <= gridPos.y + halfHeight; y++)
+            {
+                GridNode node = GetNode(x, y);
+                if (node != null)
+                {
+                    nodes.Add(node);
+                }
+            }
+        }
+
+        return nodes;
     }
 }
