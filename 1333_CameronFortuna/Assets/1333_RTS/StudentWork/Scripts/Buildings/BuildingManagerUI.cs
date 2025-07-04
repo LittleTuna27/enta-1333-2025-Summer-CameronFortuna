@@ -45,7 +45,6 @@ public class BuildingUIManager : MonoBehaviour
             }
         }
     }
-
     private void Update()
     {
         // Close menu with Escape key
@@ -66,7 +65,6 @@ public class BuildingUIManager : MonoBehaviour
             OpenBuildingMenu();
         }
     }
-
     public void OpenBuildingMenu()
     {
         if (isMenuVisible) return;
@@ -80,7 +78,6 @@ public class BuildingUIManager : MonoBehaviour
         // Animate menu in
         AnimateMenu(menuVisiblePosition, true);
     }
-
     public void CloseBuildingMenu()
     {
         if (!isMenuVisible) return;
@@ -101,7 +98,6 @@ public class BuildingUIManager : MonoBehaviour
         // Animate menu out
         AnimateMenu(menuHiddenPosition, false);
     }
-
     private void AnimateMenu(Vector2 targetPosition, bool willBeVisible)
     {
         if (currentAnimation != null)
@@ -111,7 +107,6 @@ public class BuildingUIManager : MonoBehaviour
 
         currentAnimation = StartCoroutine(SlideMenuCoroutine(targetPosition, willBeVisible));
     }
-
     private IEnumerator SlideMenuCoroutine(Vector2 targetPosition, bool willBeVisible)
     {
         Vector2 startPosition = buildingMenuPanel.anchoredPosition;
@@ -130,12 +125,5 @@ public class BuildingUIManager : MonoBehaviour
         buildingMenuPanel.anchoredPosition = targetPosition;
         isMenuVisible = willBeVisible;
         currentAnimation = null;
-    }
-
-    // Optional: Method to close menu when a building is successfully placed
-    public void OnBuildingPlaced()
-    {
-        // You could choose to keep the menu open or close it after placement
-        // CloseBuildingMenu();
     }
 }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - SearchMarker
   - Enemy
+  - Castle
   layers:
   - Default
   - TransparentFX

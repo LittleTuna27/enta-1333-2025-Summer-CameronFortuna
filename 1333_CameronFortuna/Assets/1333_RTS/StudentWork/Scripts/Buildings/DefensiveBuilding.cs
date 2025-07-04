@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,7 +25,6 @@ public class DefensiveBuilding : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("DefensiveBuildings");
         Debug.Log($"Tower {gameObject.name} set to layer: {gameObject.layer}");
     }
-
     void Update()
     {
         // Only operate if the building is active
@@ -47,7 +45,6 @@ public class DefensiveBuilding : MonoBehaviour
             AttackCurrentTarget();
         }
     }
-
     public void OnBuildingPlaced()
     {
         isActive = true;
@@ -55,8 +52,7 @@ public class DefensiveBuilding : MonoBehaviour
         Debug.Log($"Defensive building {gameObject.name} has been placed and activated");
         Debug.Log($"Tower ArmyID: {ArmyID}, Attack Range: {attackRange}, Damage: {towerDamage}");
     }
-
-    private void SetupRangeCollider()
+    public void SetupRangeCollider()
     {
         // Create or get the range collider
         rangeCollider = GetComponent<SphereCollider>();
@@ -71,8 +67,7 @@ public class DefensiveBuilding : MonoBehaviour
 
         Debug.Log($"Tower range collider set up with radius: {attackRange}");
     }
-
-    private void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (!isActive) return;
 
@@ -105,8 +100,7 @@ public class DefensiveBuilding : MonoBehaviour
             Debug.Log($"No UnitInstance component found on {other.name}");
         }
     }
-
-    private void OnTriggerExit(Collider other)
+    public void OnTriggerExit(Collider other)
     {
         UnitInstance unit = other.GetComponent<UnitInstance>();
         if (unit != null && unitsInRange.Contains(unit))
@@ -121,14 +115,12 @@ public class DefensiveBuilding : MonoBehaviour
             }
         }
     }
-
-    private void SetTarget(UnitInstance unit)
+    public void SetTarget(UnitInstance unit)
     {
         CurrentTarget = unit;
         Debug.Log($"Tower targeting: {unit.name}");
     }
-
-    private void ClearTarget()
+    public void ClearTarget()
     {
         if (CurrentTarget != null)
         {
@@ -136,8 +128,7 @@ public class DefensiveBuilding : MonoBehaviour
         }
         CurrentTarget = null;
     }
-
-    private void FindNearestTarget()
+    public void FindNearestTarget()
     {
         if (unitsInRange.Count == 0) return;
 
@@ -161,8 +152,7 @@ public class DefensiveBuilding : MonoBehaviour
             SetTarget(nearestUnit);
         }
     }
-
-    private void AttackCurrentTarget()
+    public void AttackCurrentTarget()
     {
         // Check if target still exists
         if (CurrentTarget == null)
@@ -205,37 +195,6 @@ public class DefensiveBuilding : MonoBehaviour
         {
             Debug.Log("Target destroyed by attack");
             ClearTarget();
-        }
-    }
-
-    // Debug method to manually test attacking
-    [ContextMenu("Force Attack Nearest")]
-    public void ForceAttackNearest()
-    {
-        if (unitsInRange.Count > 0)
-        {
-            SetTarget(unitsInRange[0]);
-            lastAttackTime = 0; // Reset cooldown
-            AttackCurrentTarget();
-        }
-        else
-        {
-            Debug.Log("No units in range to attack");
-        }
-    }
-
-    // Debug visualization
-    private void OnDrawGizmosSelected()
-    {
-        // Draw attack range
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
-
-        // Draw line to current target
-        if (CurrentTarget != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, CurrentTarget.transform.position);
         }
     }
 }

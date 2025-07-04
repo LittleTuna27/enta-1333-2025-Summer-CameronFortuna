@@ -129,4 +129,40 @@ public class GridManager : MonoBehaviour
 
         return new Vector2Int(x, y);
     }
+    public GridNode GetNearestWalkableNode(Vector3 position)
+    {
+        GridNode originNode = GetNodeFromWorldPosition(position);
+        if (originNode != null && originNode.walkable)
+            return originNode;
+
+        // BFS to find nearest walkable node
+        Queue<GridNode> open = new Queue<GridNode>();
+        HashSet<GridNode> visited = new HashSet<GridNode>();
+
+        if (originNode != null)
+            open.Enqueue(originNode);
+        else
+            return null;
+
+        visited.Add(originNode);
+
+        while (open.Count > 0)
+        {
+            GridNode current = open.Dequeue();
+
+            foreach (GridNode neighbor in GetNeighborNodes(current))
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    if (neighbor.walkable)
+                        return neighbor;
+
+                    visited.Add(neighbor);
+                    open.Enqueue(neighbor);
+                }
+            }
+        }
+
+        return null; // No walkable node found
+    }
 }

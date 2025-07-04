@@ -2,8 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine.UI;
 
-public class UnitInstance : UnitBase
+public class UnitInstance : UnitBase, IDamageable
 {
     [Header("Component References")]
     [SerializeField] private Animator animator;
@@ -14,7 +15,6 @@ public class UnitInstance : UnitBase
     [Header("Army Settings")]
     [SerializeField] private int armyID = 0; // The army this unit belongs to
     private CurrentTeamArmyManager armyManager;
-
 
     private GridManager gridManager;
     protected AStartPathfinding pathfinder;
@@ -29,16 +29,12 @@ public class UnitInstance : UnitBase
     public List<GridNode> CurrentPath => currentPath;
     public int ArmyID => armyID;
     public CurrentTeamArmyManager ArmyManager => armyManager;
-
     public CurrentTeamArmyManager enemyArmyManager;
-
     public GridNode currentNodeUnitON;
 
     [Header("Combat Settings")]
     [SerializeField] private float attackCooldown = 2f; // Attack every 2 seconds
-
     private float lastAttackTime = 0f;
-    
 
     // Properties to get values from UnitType
     public int AttackDamage => unitType?.Damage ?? 0;
@@ -46,10 +42,21 @@ public class UnitInstance : UnitBase
     public int Defense => unitType?.Defence ?? 0;
     public int AttackRange => unitType?.Range ?? 1;
 
-    public UnitBase CurrentTarget;
+    // REFACTORED: Use IDamageable interface for flexible targeting
+    public IDamageable AttackTarget { get; private set; }
+    public UnitBase CurrentTarget; // Keep for backward compatibility
     public int currentHealth;
+    public int CurrentHealth => currentHealth;
+    public bool IsAlive => currentHealth > 0;
+
+    [Header("UI References")]
+    [SerializeField] private Slider healthSlider;
 
     //showing the state the unit is in
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
 
     public UnitState state
     {
@@ -80,26 +87,24 @@ public class UnitInstance : UnitBase
             Debug.LogWarning("UnitSelectionManager.Instance is null!");
         }
         InitializeHealth();
-
     }
+
     private void InitializeHealth()
     {
         currentHealth = MaxHealth;
+        InitializeHealthBar();
     }
 
     private void Update()
     {
         if (state == UnitState.Moving)
-        { DoMove(); }
+        {
+            DoMove();
+        }
 
         Attackmode();
-
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            IsThereEnemy();
-        }
-        //SetNodeOccipied();
     }
+
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID)
     {
         this.pathfinder = pathfinder;
@@ -122,6 +127,7 @@ public class UnitInstance : UnitBase
         if (this.unitType == null) Debug.LogError($"{name}: unitType is null!");
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
+
     private void FindArmyManager()
     {
         // Find the army manager that matches this unit's army ID
@@ -140,56 +146,28 @@ public class UnitInstance : UnitBase
             Debug.LogWarning($"{name}: Could not find army manager for Army ID {armyID}");
         }
     }
-    private void FindEnemyArmyManager()
-    {
-        // Find army managers that are NOT this unit's army
-        CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
-        foreach (var manager in managers)
-        {
-            if (manager.armyID != armyID) // Different army = enemy
-            {
-                enemyArmyManager = manager;
-                break;
-            }
-        }
-
-        if (enemyArmyManager == null)
-        {
-            Debug.LogWarning($"{name}: Could not find enemy army manager");
-        }
-    }
-
-    public void SetArmyID(int newArmyID)
-    {
-        if (armyID != newArmyID)
-        {
-            int oldArmyID = armyID;
-            armyID = newArmyID;
-            FindArmyManager(); // Find new army manager
-
-            Debug.Log($"{name} switched from Army {oldArmyID} to Army {armyID}");
-        }
-    }
-
     //telling the unit to move to a certain node
     //handling getting the nodes and call pathfinding and visualizer to get the math and draw the path
     public override void MoveTo(GridNode targetNode)
     {
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
 
+        // If the target node is not walkable, find the nearest walkable one
+        if (targetNode != null && (!targetNode.walkable || targetNode.IsOccupied))
+        {
+            Debug.Log($"{name}: Target node is blocked, finding nearest walkable node");
+            targetNode = gridManager.GetNearestWalkableNode(targetNode.WorldPosition);
+
+            if (targetNode == null)
+            {
+                Debug.LogWarning($"{name}: Could not find any walkable node near target");
+                state = UnitState.Idle;
+                return;
+            }
+        } 
         List<GridNode> searched;
         currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
         Debug.Log($"{name} path found with {currentPath?.Count ?? 0} nodes.");
-
-        // visualize the chosen path
-        if (pathFinderVisulization != null)
-        {
-            pathFinderVisulization.DrawPath(currentPath);
-        }
-        else
-        {
-            Debug.LogWarning($"{name} has no pathFinderVisulization assigned!");
-        }
 
         //start movement path traversal if there is a path
         if (currentPath != null && currentPath.Count > 0)
@@ -274,64 +252,49 @@ public class UnitInstance : UnitBase
         }
         Debug.Log($"{name} deselected.");
     }
-    public void IsThereEnemy()
-    {
-        // Add this null check at the beginning
-        if (enemyArmyManager == null)
-        {
-            FindEnemyArmyManager();
-            if (enemyArmyManager == null)
-            {
-                Debug.LogWarning($"{name}: No enemy army manager found!");
-                return;
-            }
-        }
-
-        CurrentTarget = null;
-        float closestDistance = Mathf.Infinity;
-
-        Vector3 myPosition = transform.position;
-
-        for (int i = 0; i < enemyArmyManager.currentlyActiveUnits.Count; i++)
-        {
-            UnitBase enemy = enemyArmyManager.currentlyActiveUnits[i];
-            float distance = Vector3.Distance(myPosition, enemy.transform.position);
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                CurrentTarget = enemy;
-            }
-        }
-
-        if (CurrentTarget != null)
-        {
-            GridNode targetNode = gridManager.GetNodeFromWorldPosition(CurrentTarget.transform.position);
-            if (targetNode != null)
-            {
-                MoveTo(targetNode);
-            }
-        }
-    }
-    public UnitBase AttackTarget { get; private set; }
-
-    public void SetAttackTarget(UnitBase target)
+    public void SetAttackTarget(IDamageable target)
     {
         AttackTarget = target;
-        CurrentTarget = target; // Also set as current target for existing attack logic
 
-        // Move towards the target
+        // Also set as current target for backward compatibility
+        if (target is UnitBase unitTarget)
+        {
+            CurrentTarget = unitTarget;
+        }
+
+        // Move towards the target using smart pathfinding
         if (target != null)
         {
-            GridNode targetNode = gridManager.GetNodeFromWorldPosition(target.transform.position);
-            if (targetNode != null)
+            Transform targetTransform = GetTargetTransform(target);
+            if (targetTransform != null)
             {
-                MoveTo(targetNode);
-                state = UnitState.Moving;
+                // Use GridManager's GetNearestWalkableNode to find a walkable node near the target
+                GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
+                if (targetNode != null)
+                {
+                    MoveTo(targetNode);
+                    state = UnitState.Moving;
+                    Debug.Log($"{name} moving to attack {GetTargetName(target)} at nearest walkable position");
+                }
+                else
+                {
+                    Debug.LogWarning($"{name}: Cannot find walkable path to attack target {GetTargetName(target)}");
+                }
             }
         }
     }
-
+    private Transform GetTargetTransform(IDamageable target)
+    {
+        if (target is MonoBehaviour monoBehaviour)
+        {
+            return monoBehaviour.transform;
+        }
+        else if (target is Component component)
+        {
+            return component.transform;
+        }
+        return null;
+    }
     public void ClearAttackTarget()
     {
         AttackTarget = null;
@@ -348,13 +311,14 @@ public class UnitInstance : UnitBase
         if (AttackTarget != null)
         {
             // Check if target is still valid (not destroyed)
-            if (AttackTarget == null || AttackTarget.gameObject == null)
+            Transform targetTransform = GetTargetTransform(AttackTarget);
+            if (targetTransform == null || !AttackTarget.IsAlive)
             {
                 ClearAttackTarget();
                 return;
             }
 
-            float distanceToTarget = Vector3.Distance(transform.position, AttackTarget.transform.position);
+            float distanceToTarget = Vector3.Distance(transform.position, targetTransform.position);
 
             if (distanceToTarget <= AttackRange)
             {
@@ -373,28 +337,18 @@ public class UnitInstance : UnitBase
                 // Target is out of range, keep moving towards it
                 if (state != UnitState.Moving)
                 {
-                    GridNode targetNode = gridManager.GetNodeFromWorldPosition(AttackTarget.transform.position);
+                    // Use GridManager's GetNearestWalkableNode to find a walkable node near the target
+                    GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
                     if (targetNode != null)
                     {
                         MoveTo(targetNode);
                     }
-                }
-            }
-        }
-        // Keep your existing logic for auto-found enemies as fallback
-        else if (CurrentTarget != null)
-        {
-            float distanceToTarget = Vector3.Distance(transform.position, CurrentTarget.transform.position);
-            if (distanceToTarget <= AttackRange)
-            {
-                // Target is in range - we should be in attacking state
-                state = UnitState.Attacking;
-
-                // Check cooldown for auto-found targets too
-                if (Time.time >= lastAttackTime + attackCooldown)
-                {
-                    PerformAttack(CurrentTarget);
-                    lastAttackTime = Time.time;
+                    else
+                    {
+                        Debug.LogWarning($"{name}: Cannot find walkable path to target during attack mode");
+                        // Optionally clear the target if we can't reach it
+                        ClearAttackTarget();
+                    }
                 }
             }
         }
@@ -407,50 +361,83 @@ public class UnitInstance : UnitBase
             }
         }
     }
-    private void PerformAttack(UnitBase target)
+    private void PerformAttack(IDamageable target)
     {
-
         if (target == null) return;
 
-        Debug.Log($"{name} attacks {target.name} for {AttackDamage} damage!");
+        string targetName = GetTargetName(target);
+        Debug.Log($"{name} attacks {targetName} for {AttackDamage} damage!");
 
         // Deal damage
-        UnitInstance targetUnit = target as UnitInstance;
-        if (targetUnit != null)
-        {
-            targetUnit.TakeDamage(AttackDamage);
-        }
+        target.TakeDamage(AttackDamage, gameObject);
 
-        if (target == null)
+        // If target died, clear it
+        if (!target.IsAlive)
         {
+            if (AttackTarget == target)
+            {
+                ClearAttackTarget();
+            }
+            // Clear legacy target if it's the same
+            if (target is UnitBase unitTarget && CurrentTarget == unitTarget)
+            {
+                CurrentTarget = null;
+            }
             state = UnitState.Idle;
         }
     }
-    public void TakeDamage(int damage)
+    private string GetTargetName(IDamageable target)
     {
+        if (target is MonoBehaviour monoBehaviour)
+        {
+            return monoBehaviour.name;
+        }
+        else if (target is Component component)
+        {
+            return component.name;
+        }
+        return "Unknown Target";
+    }
+
+    public void TakeDamage(int damage, GameObject attacker = null)
+    {
+        if (!IsAlive) return;
+
         // Calculate actual damage after defense
-        int actualDamage = Mathf.Max(1, damage - Defense); // Minimum 1 damage
-        currentHealth -= actualDamage;
+        int actualDamage = Mathf.Max(1, damage - Defense);
+        int oldHealth = currentHealth;
+        currentHealth = Mathf.Max(0, currentHealth - actualDamage);
 
-        Debug.Log($"{name} took {actualDamage} damage ({damage} - {Defense} defense). Health: {currentHealth}/{MaxHealth}");
+        UpdateHealthBar();
 
-        // Check if unit is dead
-        if (currentHealth <= 0)
+        Debug.Log($"{name} took {actualDamage} damage from {(attacker != null ? attacker.name : "unknown")}. Health: {currentHealth}/{MaxHealth}");
+
+        // Check if unit died
+        if (currentHealth <= 0 && oldHealth > 0)
         {
             Die();
         }
     }
-
     public void Die()
     {
-        Debug.Log($"{name} has died!");
-
+        // Clear any attack targets pointing to this unit
+        UnitInstance[] allUnits = FindObjectsOfType<UnitInstance>();
+        foreach (var unit in allUnits)
+        {
+            if (unit.AttackTarget == this)
+            {
+                unit.ClearAttackTarget();
+            }
+            if (unit.CurrentTarget == this)
+            {
+                unit.CurrentTarget = null;
+            }
+        }
         // Remove from selection if selected
         if (UnitSelectionManager.Instance.selectedUnits.Contains(this))
         {
             UnitSelectionManager.Instance.selectedUnits.Remove(this);
         }
-
         // Remove from army manager
         if (armyManager != null)
         {
@@ -463,26 +450,7 @@ public class UnitInstance : UnitBase
             UnitSelectionManager.Instance.allUnitsList.Remove(this);
         }
 
-        // Optional: Play death animation/effects before destroying
-        Destroy(gameObject);
-    }
-    void OnDrawGizmosSelected()
-    {
-        if (AttackTarget != null)
-        {
-            // Draw attack range
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, AttackRange);
-            Gizmos.DrawLine(transform.position, AttackTarget.transform.position);
-
-            // Show cooldown status
-            float cooldownProgress = (Time.time - lastAttackTime) / attackCooldown;
-            if (cooldownProgress < 1f)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireCube(transform.position + Vector3.up * 2f, Vector3.one * 0.5f);
-            }
-        }
+        Destroy(gameObject, 0.5f); // Small delay for effects
     }
     private void UpdateAnimator()
     {
@@ -492,7 +460,6 @@ public class UnitInstance : UnitBase
         animator.SetBool("IsMoving", false);
         animator.SetBool("IsAttacking", false);
         animator.SetBool("IsIdle", false);
-
 
         // Set the appropriate state
         switch (_state)
@@ -508,5 +475,20 @@ public class UnitInstance : UnitBase
                 break;
         }
     }
- 
+    private void InitializeHealthBar()
+    {
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = MaxHealth;
+            healthSlider.value = currentHealth;
+            healthSlider.interactable = false; // Players can't drag it
+        }
+    }
+    private void UpdateHealthBar()
+    {
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+    }
 }

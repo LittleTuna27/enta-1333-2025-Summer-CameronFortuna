@@ -14,25 +14,23 @@ public class GroupCommandHandler : MonoBehaviour
             HandleRightClick();
         }
     }
+
     private void HandleRightClick()
     {
-        // Exclude DefensiveBuildings layer from raycasts
-        int layerMask = ~LayerMask.GetMask("DefensiveBuildings");
-
+        // Don't exclude any layers - we want to be able to target buildings now
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
         {
-            // Check if we hit a unit
-            UnitInstance hitUnit = hit.collider.GetComponent<UnitInstance>();
-            if (hitUnit == null)
+            // First, check if we hit something with IDamageable (units or buildings)
+            IDamageable hitTarget = hit.collider.GetComponent<IDamageable>();
+            if (hitTarget == null)
             {
-                hitUnit = hit.collider.GetComponentInParent<UnitInstance>();
+                hitTarget = hit.collider.GetComponentInParent<IDamageable>();
             }
 
-            if (hitUnit != null)
+            if (hitTarget != null)
             {
-                HandleUnitClick(hitUnit);
+                HandleTargetClick(hitTarget, hit.collider.gameObject);
             }
             else
             {
@@ -41,37 +39,84 @@ public class GroupCommandHandler : MonoBehaviour
         }
     }
 
-    private void HandleUnitClick(UnitInstance targetUnit)
+    private void HandleTargetClick(IDamageable target, GameObject targetObject)
     {
         foreach (var selectedUnit in UnitSelectionManager.Instance.selectedUnits)
         {
-            // Check if target is an enemy (different army ID)
-            if (selectedUnit.ArmyID != targetUnit.ArmyID)
+            // Check if target is an enemy
+            if (IsEnemyTarget(selectedUnit, target))
             {
-                // It's an enemy - set as attack target and move towards it
-                selectedUnit.SetAttackTarget(targetUnit);
-                Debug.Log($"{selectedUnit.name} ordered to attack {targetUnit.name}");
+                // It's an enemy - set as attack target (this will handle pathfinding internally)
+                selectedUnit.SetAttackTarget(target);
+                Debug.Log($"{selectedUnit.name} ordered to attack {GetTargetName(targetObject)}");
             }
             else
             {
-                // It's a friendly unit - just move to its location
-                GridNode targetNode = gridManager.GetNodeFromWorldPosition(targetUnit.transform.position);
-                selectedUnit.MoveTo(targetNode);
-                Debug.Log($"{selectedUnit.name} ordered to move to friendly unit {targetUnit.name}");
+                // It's a friendly target - move to nearest walkable position around it
+                GridNode targetNode = gridManager.GetNearestWalkableNode(target.GetPosition());
+                if (targetNode != null)
+                {
+                    selectedUnit.MoveTo(targetNode);
+                    Debug.Log($"{selectedUnit.name} ordered to move to friendly {GetTargetName(targetObject)}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Cannot find walkable path to friendly {GetTargetName(targetObject)}");
+                }
             }
         }
     }
 
-    private void HandleTerrainClick(Vector3 worldPosition)
+    private bool IsEnemyTarget(UnitInstance unit, IDamageable target)
     {
-        GridNode targetNode = gridManager.GetNodeFromWorldPosition(worldPosition);
-
-        foreach (var unit in UnitSelectionManager.Instance.selectedUnits)
+        // Check if target is a unit
+        if (target is UnitInstance targetUnit)
         {
-            unit.MoveTo(targetNode); // This triggers A* and starts movement
-            unit.ClearAttackTarget(); // Clear any existing attack target
+            return unit.ArmyID != targetUnit.ArmyID;
         }
 
-        Debug.Log($"Units ordered to move to terrain position");
+        // Check if target is a building
+        if (target is BuildingHealth targetBuilding)
+        {
+            return unit.ArmyID != targetBuilding.ArmyID;
+        }
+
+        // If we can't determine army, assume it's an enemy
+        return true;
+    }
+
+    private string GetTargetName(GameObject targetObject)
+    {
+        // Try to get a more descriptive name
+        if (targetObject.GetComponent<UnitInstance>() != null)
+        {
+            return $"unit {targetObject.name}";
+        }
+        else if (targetObject.GetComponent<BuildingHealth>() != null)
+        {
+            var building = targetObject.GetComponent<BuildingHealth>();
+            return $"building {building.BuildingName}";
+        }
+
+        return targetObject.name;
+    }
+    private void HandleTerrainClick(Vector3 worldPosition)
+    {
+        // Use GetNearestWalkableNode to ensure we're targeting a walkable position
+        GridNode targetNode = gridManager.GetNearestWalkableNode(worldPosition);
+
+        if (targetNode != null)
+        {
+            foreach (var unit in UnitSelectionManager.Instance.selectedUnits)
+            {
+                unit.MoveTo(targetNode); // This triggers A* and starts movement
+                unit.ClearAttackTarget(); // Clear any existing attack target
+            }
+            Debug.Log($"Units ordered to move to terrain position");
+        }
+        else
+        {
+            Debug.LogWarning("Cannot find walkable position to move to");
+        }
     }
 }

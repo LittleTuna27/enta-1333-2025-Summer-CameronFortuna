@@ -52,7 +52,6 @@ public class BuildingPlacementManager : MonoBehaviour
             PlaceBuilding();
         }
     }
-
     private void OnEnterBuildMode()
     {
         Debug.Log("Entered build mode");
@@ -60,7 +59,6 @@ public class BuildingPlacementManager : MonoBehaviour
         DestroyGhost();
         canPlaceHere = false;
     }
-
     private void OnExitBuildMode()
     {
         Debug.Log("Exited build mode");
@@ -69,7 +67,6 @@ public class BuildingPlacementManager : MonoBehaviour
         DestroyGhost();
         canPlaceHere = false;
     }
-
     public void SetActiveBuilding(BuildingData buildingData)
     {
         Debug.Log($"SetActiveBuilding called with: {(buildingData != null ? buildingData.BuildingName : "null")}");
@@ -84,7 +81,6 @@ public class BuildingPlacementManager : MonoBehaviour
             CreateGhostInstance();
         }
     }
-
     private void CreateGhostInstance()
     {
         if (currentSelectedBuilding == null)
@@ -137,7 +133,6 @@ public class BuildingPlacementManager : MonoBehaviour
             ghostInstance = null;
         }
     }
-
     private void DestroyGhost()
     {
         if (ghostInstance != null)
@@ -147,7 +142,6 @@ public class BuildingPlacementManager : MonoBehaviour
             canPlaceHere = false;
         }
     }
-
     private void ApplyGhostMaterial(Material mat)
     {
         if (ghostInstance == null || mat == null) return;
@@ -206,8 +200,6 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogError($"Error in UpdateGhostPreview: {e.Message}");
         }
     }
-
-    // Add this new method to calculate the proper building origin
     private Vector2Int CalculateBuildingOrigin(Vector2Int mouseGridPos, int buildingWidth, int buildingDepth)
     {
         // For odd-sized buildings (like 3x3), we want the building centered on the mouse position
@@ -224,8 +216,6 @@ public class BuildingPlacementManager : MonoBehaviour
 
         return origin;
     }
-
-    // Also update the PlaceBuilding method
     private void PlaceBuilding()
     {
         if (currentSelectedBuilding == null || ghostInstance == null)
@@ -279,7 +269,6 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogError($"Failed to place building: {e.Message}");
         }
     }
-
     private bool CanPlaceBuildingAt(int startX, int startY, int width, int height)
     {
         if (gridManager == null) return false;
@@ -309,11 +298,5 @@ public class BuildingPlacementManager : MonoBehaviour
             : new Vector3(centerGridX * nodeSize, centerGridY * nodeSize, 0f);
 
         return worldPosition;
-    }
-
-    // Public method to clear the current selection (useful for UI buttons)
-    public void ClearSelection()
-    {
-        SetActiveBuilding(null);
     }
 }

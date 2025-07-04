@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: U_LightInfantry
   m_EditorClassIdentifier: 
   _maxHp: 100
-  _moveSpeed: 1
-  _damage: 5
+  _moveSpeed: 2
+  _damage: 15
   _defence: 5
   _attackType: 0
-  _range: 1
+  _range: 2
   _width: 1
   _height: 1

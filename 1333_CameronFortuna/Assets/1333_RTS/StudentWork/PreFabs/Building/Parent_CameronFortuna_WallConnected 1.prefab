@@ -94,6 +94,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1711371458632143845}
+  - component: {fileID: 2558780074887419682}
+  - component: {fileID: -4277133307247774629}
   m_Layer: 0
   m_Name: Parent_CameronFortuna_WallConnected 1
   m_TagString: Untagged
@@ -117,6 +119,60 @@ Transform:
   - {fileID: 2524365692677765958}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &2558780074887419682
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730732060168385649}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
+--- !u!114 &-4277133307247774629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730732060168385649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082a78c6c9aa1874e917579c17810600, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildingData:
+    BuildingName: 
+    BuildingIcon: {fileID: 0}
+    BuildingPrefab: {fileID: 0}
+    BuildingWidth: 1
+    BuildingDepth: 1
+    Scale: {x: 1, y: 1, z: 1}
+  maxHealth: 100
+  currentHealth: 0
+  defense: 0
+  armyID: 0
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBuildingDestroyed:
+    m_PersistentCalls:
+      m_Calls: []
+  healthBar: {fileID: 0}
+  destroyOnZeroHealth: 1
+  destroyDelay: 0.5
 --- !u!1001 &2031279637512097501
 PrefabInstance:
   m_ObjectHideFlags: 0
