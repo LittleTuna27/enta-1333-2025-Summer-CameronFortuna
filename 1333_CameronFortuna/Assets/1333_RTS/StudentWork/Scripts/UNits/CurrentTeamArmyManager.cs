@@ -22,12 +22,13 @@ public class CurrentTeamArmyManager : MonoBehaviour
     public void Start()
     {
     }
-    public void SpawnUnit(Vector3 position)
+    // Just change this method in CurrentTeamArmyManager.cs
+    public UnitInstance SpawnUnit(Vector3 position)
     {
         if (unitPrefab == null)
         {
             Debug.LogError($"{name}: Cannot spawn unit - unitPrefab is null!");
-            return;
+            return null;
         }
 
         // Spawn the base unit
@@ -38,7 +39,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
         {
             Debug.LogError($"{name}: Spawned unit doesn't have UnitInstance component!");
             Destroy(baseUnit);
-            return;
+            return null;
         }
 
         // Initialize the unit with army ID
@@ -49,6 +50,8 @@ public class CurrentTeamArmyManager : MonoBehaviour
         ApplyTeamVisuals(unit);
 
         Debug.Log($"{name}: Spawned unit {unit.name} for Army {armyID} at {position}");
+
+        return unit; // Return the spawned unit
     }
 
     private void ApplyTeamVisuals(UnitInstance unit)

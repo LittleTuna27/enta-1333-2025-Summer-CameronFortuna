@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.L))
+        if (Input.GetKeyDown(KeyCode.P))
         {
            
             pathfindingLogic.ClearVisualization();
