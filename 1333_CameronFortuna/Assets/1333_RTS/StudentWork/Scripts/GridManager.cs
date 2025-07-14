@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GridManager : MonoBehaviour
 {
@@ -55,7 +57,7 @@ public class GridManager : MonoBehaviour
                 allNodes.Add(node);
             }
         }
-
+        
         IsInitialized = true;
     }
     private void OnDrawGizmos()

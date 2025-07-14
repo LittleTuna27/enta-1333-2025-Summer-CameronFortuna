@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &157655932228062796
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1592467883845429447}
+  - component: {fileID: 7401726025684933039}
+  - component: {fileID: 8024635283183346554}
+  m_Layer: 0
+  m_Name: AIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1592467883845429447
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157655932228062796}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3168494438911272830}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7401726025684933039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157655932228062796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a87dd498f71c69c4c8d099b9a343f13b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  globalPathfindingInterval: 2
+  globalDetectionRange: 5
+  globalCastleDetectionRange: 15
+  enableBuildingDestruction: 1
+  playerCastle: {fileID: 0}
+  enemyCastle: {fileID: 0}
+  showDebugLogs: 1
+--- !u!114 &8024635283183346554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157655932228062796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b58e6706de25d0e46ab0c335c966858b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyUnitPrefab: {fileID: 4863667100732135418, guid: 144a5c3988ca2c64ea705189746109cb, type: 3}
+  spawnPoints:
+  - {fileID: 1592467883845429447}
+  - {fileID: 3168494438911272830}
+  spawnInterval: 10
+  maxEnemies: 20
+  autoSpawn: 1
+  enemyUnitType: {fileID: 11400000, guid: 5f7fcc837c993254590de558c091a621, type: 2}
+  playerCastle: {fileID: 0}
+  enemyArmyManager: {fileID: 0}
+  gridManager: {fileID: 0}
+  pathfinder: {fileID: 0}
+  visualizer: {fileID: 0}
+--- !u!1 &2133438072192936682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3168494438911272830}
+  m_Layer: 0
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3168494438911272830
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133438072192936682}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 20}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1592467883845429447}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

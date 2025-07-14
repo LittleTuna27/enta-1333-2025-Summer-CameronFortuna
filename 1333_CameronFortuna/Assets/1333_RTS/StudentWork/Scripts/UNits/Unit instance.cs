@@ -328,6 +328,7 @@ public class UnitInstance : UnitBase, IDamageable
                 // Check if enough time has passed since last attack
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
+                    SoundPracticePlayer.Instance.PlaySound(4, AudioSourceType.SFX);
                     PerformAttack(AttackTarget);
                     lastAttackTime = Time.time;
                 }

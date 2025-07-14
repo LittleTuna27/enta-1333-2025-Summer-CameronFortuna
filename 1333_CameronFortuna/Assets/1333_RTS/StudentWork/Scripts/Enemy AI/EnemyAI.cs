@@ -166,6 +166,10 @@ public class EnemyAI : MonoBehaviour
     public IDamageable GetCurrentTarget() => currentTarget;
     public AIState GetCurrentState() => currentAIState;
 
+    public void GetBuildingEdge()
+    {
+
+    }
     private void OnDestroy()
     {
         if (aiCoroutine != null)

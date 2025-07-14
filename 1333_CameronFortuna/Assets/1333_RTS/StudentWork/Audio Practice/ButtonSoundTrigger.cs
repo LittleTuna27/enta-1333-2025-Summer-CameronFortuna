@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ButtonSoundTrigger : MonoBehaviour
 {
-    // Simple methods you can call from button OnClick events
+   /* // Simple methods you can call from button OnClick events
     public void PlayDeadSound()
     {
         SoundPracticePlayer.Instance.PlaySound(SoundEnum.DeadSound);
@@ -27,5 +27,5 @@ public class ButtonSoundTrigger : MonoBehaviour
         {
             SoundPracticePlayer.Instance.PlaySound(soundType);
         }
-    }
+    }*/
 }

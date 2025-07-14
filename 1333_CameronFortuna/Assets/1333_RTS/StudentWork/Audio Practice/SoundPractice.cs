@@ -1,13 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+// Enum for different audio source types
+public enum AudioSourceType
+{
+    SFX,
+    UI,
+    Music
+}
+
 public class SoundPracticePlayer : MonoBehaviour
 {
-    public AudioSource audioSource;
-    public SoundEntry[] sounds;
+    [Header("Audio Sources - Assign in Inspector")]
+    public AudioSource sfxAudioSource;
+    public AudioSource uiAudioSource;
+    public AudioSource musicAudioSource;
 
-    // Dictionary for fast lookup
-    private Dictionary<SoundEnum, AudioClip> soundDictionary;
+    [Header("Sound Library - Drag Audio Clips Here")]
+    public List<AudioClip> audioClips = new List<AudioClip>();
+
     public static SoundPracticePlayer Instance { get; private set; }
 
     void Awake()
@@ -24,56 +36,184 @@ public class SoundPracticePlayer : MonoBehaviour
             return;
         }
 
-        // Initialize audio source
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
-
-        // Build dictionary for fast lookup
-        BuildSoundDictionary();
+        // Initialize default audio source if not assigned
+        if (sfxAudioSource == null)
+            sfxAudioSource = GetComponent<AudioSource>();
     }
 
-    void BuildSoundDictionary()
+    // Main method to play sounds by index
+    public void PlaySound(int clipIndex, AudioSourceType sourceType = AudioSourceType.SFX)
     {
-        soundDictionary = new Dictionary<SoundEnum, AudioClip>();
-
-        foreach (SoundEntry sound in sounds)
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource == null)
         {
-            if (!soundDictionary.ContainsKey(sound.soundType))
-            {
-                soundDictionary.Add(sound.soundType, sound.audioClip);
-            }
-            else
-            {
-                Debug.LogWarning($"Duplicate sound type found: {sound.soundType}");
-            }
+            Debug.LogWarning($"AudioSource type {sourceType} is not assigned!");
+            return;
         }
-    }
 
-    // Main method to play sounds
-    public void PlaySound(SoundEnum soundType)
-    {
-        if (soundDictionary.TryGetValue(soundType, out AudioClip clip))
+        if (clipIndex >= 0 && clipIndex < audioClips.Count)
         {
+            AudioClip clip = audioClips[clipIndex];
             if (clip != null)
             {
-                audioSource.clip = clip;
-                audioSource.Play();
+                targetSource.clip = clip;
+                targetSource.loop = false; // Ensure it's not looping
+                targetSource.Play();
             }
             else
             {
-                Debug.LogWarning($"Audio clip for {soundType} is null!");
+                Debug.LogWarning($"Audio clip at index {clipIndex} is null!");
             }
         }
         else
         {
-            Debug.LogWarning($"Sound type {soundType} not found!");
+            Debug.LogWarning($"Audio clip index {clipIndex} is out of range! Available clips: {audioClips.Count}");
         }
     }
-}
 
-[System.Serializable]
-public class SoundEntry
-{
-    public SoundEnum soundType;
-    public AudioClip audioClip;
+    public void PlayOneShot(int clipIndex, AudioSourceType sourceType = AudioSourceType.SFX)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource == null)
+        {
+            Debug.LogWarning($"AudioSource type {sourceType} is not assigned!");
+            return;
+        }
+
+        if (clipIndex >= 0 && clipIndex < audioClips.Count)
+        {
+            AudioClip clip = audioClips[clipIndex];
+            if (clip != null)
+            {
+                targetSource.PlayOneShot(clip);
+            }
+            else
+            {
+                Debug.LogWarning($"Audio clip at index {clipIndex} is null!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Audio clip index {clipIndex} is out of range! Available clips: {audioClips.Count}");
+        }
+    }
+
+    public void PlayLoopingSound(int clipIndex, AudioSourceType sourceType = AudioSourceType.SFX)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource == null)
+        {
+            Debug.LogWarning($"AudioSource type {sourceType} is not assigned!");
+            return;
+        }
+
+        if (clipIndex >= 0 && clipIndex < audioClips.Count)
+        {
+            AudioClip clip = audioClips[clipIndex];
+            if (clip != null)
+            {
+                targetSource.clip = clip;
+                targetSource.loop = true;
+                targetSource.Play();
+            }
+            else
+            {
+                Debug.LogWarning($"Audio clip at index {clipIndex} is null!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Audio clip index {clipIndex} is out of range! Available clips: {audioClips.Count}");
+        }
+    }
+
+    // Utility methods for controlling specific audio sources
+    public void StopSound(AudioSourceType sourceType)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource != null)
+        {
+            targetSource.Stop();
+        }
+    }
+
+    public void PauseSound(AudioSourceType sourceType)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource != null)
+        {
+            targetSource.Pause();
+        }
+    }
+
+    public void ResumeSound(AudioSourceType sourceType)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource != null)
+        {
+            targetSource.UnPause();
+        }
+    }
+
+    public void SetVolume(AudioSourceType sourceType, float volume)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource != null)
+        {
+            targetSource.volume = Mathf.Clamp01(volume);
+        }
+    }
+
+    public bool IsPlaying(AudioSourceType sourceType)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        return targetSource != null && targetSource.isPlaying;
+    }
+
+    public void SetLoop(AudioSourceType sourceType, bool loop)
+    {
+        AudioSource targetSource = GetAudioSource(sourceType);
+        if (targetSource != null)
+        {
+            targetSource.loop = loop;
+        }
+    }
+
+    // Get the appropriate AudioSource based on the enum
+    private AudioSource GetAudioSource(AudioSourceType sourceType)
+    {
+        switch (sourceType)
+        {
+            case AudioSourceType.SFX:
+                return sfxAudioSource;
+            case AudioSourceType.UI:
+                return uiAudioSource;
+            case AudioSourceType.Music:
+                return musicAudioSource;
+            default:
+                return sfxAudioSource;
+        }
+    }
+
+    // Helper method to get AudioSource directly (for advanced usage)
+    public AudioSource GetAudioSourceDirect(AudioSourceType sourceType)
+    {
+        return GetAudioSource(sourceType);
+    }
+
+    // Helper method to get total number of audio clips
+    public int GetAudioClipCount()
+    {
+        return audioClips.Count;
+    }
+
+    // Helper method to get audio clip name by index (useful for debugging)
+    public string GetAudioClipName(int index)
+    {
+        if (index >= 0 && index < audioClips.Count && audioClips[index] != null)
+        {
+            return audioClips[index].name;
+        }
+        return "Invalid Index";
+    }
 }

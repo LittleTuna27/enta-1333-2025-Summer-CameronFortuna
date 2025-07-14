@@ -223,7 +223,6 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogWarning("Cannot place building - missing data or ghost instance");
             return;
         }
-
         try
         {
             // Use the same logic as the ghost preview to determine grid coordinates

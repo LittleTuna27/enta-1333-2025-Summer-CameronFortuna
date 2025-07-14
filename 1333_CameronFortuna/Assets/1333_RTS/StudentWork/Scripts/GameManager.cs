@@ -11,22 +11,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CurrentTeamArmyManager currentTeamManager;
     [SerializeField] private CurrentTeamArmyManager EnemyTeamManager;
 
+
     private void Awake()
     {
-       
+        if (SoundPracticePlayer.Instance != null)
+        {
+            SoundPracticePlayer.Instance.PlayLoopingSound(0, AudioSourceType.Music);
+        }
     }
 
     private void Update()
     {
-
         if (Input.GetKeyDown(KeyCode.P))
         {
-           
-            pathfindingLogic.ClearVisualization();
-
-            StopAllCoroutines();
             gridManager.InitializeGrid();
-            pathFinder.ResetFeild(); // Recalculates new path after grid regen
         }
     }
 }
