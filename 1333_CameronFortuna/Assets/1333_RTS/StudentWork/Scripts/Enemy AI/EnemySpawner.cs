@@ -6,19 +6,23 @@ public class EnemySpawner : MonoBehaviour
     [Header("Spawning Settings")]
     [SerializeField] private GameObject enemyUnitPrefab;
     [SerializeField] private Transform[] spawnPoints;
-    [SerializeField] private float spawnInterval = 10f; // Spawn every 10 seconds
-    [SerializeField] private int maxEnemies = 20; // Maximum enemies at once
+    [SerializeField] private float spawnInterval = 10f;
+    [SerializeField] private int maxEnemies = 20;
     [SerializeField] private bool autoSpawn = true;
 
     [Header("Enemy Settings")]
     [SerializeField] private UnitType enemyUnitType;
-    [SerializeField] private Transform playerCastle; // Reference to player castle
+    [SerializeField] private Transform playerCastle;
 
     [Header("System References")]
     [SerializeField] private CurrentTeamArmyManager enemyArmyManager;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private AStartPathfinding pathfinder;
     [SerializeField] private PathFinderVisualization visualizer;
+
+    [Header("AI Settings")]
+    [SerializeField] private bool useManualSpawning = false;
+    [SerializeField] private bool enableDebugLogs = true;
 
     private Coroutine spawnCoroutine;
     private int currentEnemyCount = 0;
@@ -31,12 +35,12 @@ public class EnemySpawner : MonoBehaviour
         if (visualizer == null) visualizer = FindObjectOfType<PathFinderVisualization>();
 
         // Find enemy army manager (army ID 1)
-        if (enemyArmyManager == null)
+        if (enemyArmyManager == null && !useManualSpawning)
         {
             CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
             foreach (var manager in managers)
             {
-                if (manager.armyID == 1) // Enemy army
+                if (manager.armyID == 1)
                 {
                     enemyArmyManager = manager;
                     break;
@@ -54,10 +58,17 @@ public class EnemySpawner : MonoBehaviour
         {
             spawnCoroutine = StartCoroutine(AutoSpawnRoutine());
         }
+
+        Debug.Log($"EnemySpawner initialized - Castle: {playerCastle?.name}");
     }
 
     private Transform FindPlayerCastle()
     {
+        // Try tagged approach first
+        GameObject taggedCastle = GameObject.FindWithTag("Castle");
+        if (taggedCastle != null) return taggedCastle.transform;
+
+        // Fallback: search for BuildingHealth components
         BuildingHealth[] buildings = FindObjectsOfType<BuildingHealth>();
         foreach (var building in buildings)
         {
@@ -78,7 +89,6 @@ public class EnemySpawner : MonoBehaviour
         {
             yield return new WaitForSeconds(spawnInterval);
 
-            // Count current live enemies
             currentEnemyCount = CountLiveEnemies();
 
             if (currentEnemyCount < maxEnemies)
@@ -94,7 +104,7 @@ public class EnemySpawner : MonoBehaviour
         UnitInstance[] allUnits = FindObjectsOfType<UnitInstance>();
         foreach (var unit in allUnits)
         {
-            if (unit.ArmyID == 1 && unit.IsAlive) // Enemy army
+            if (unit.ArmyID == 1 && unit.IsAlive)
             {
                 count++;
             }
@@ -110,38 +120,47 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        // Choose random spawn point
         Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-        // Use army manager to spawn if available, otherwise spawn manually
-        if (enemyArmyManager != null)
+        if (enemyArmyManager != null && !useManualSpawning)
         {
-            enemyArmyManager.SpawnUnit(spawnPoint.position);
-
-            // Get the newly spawned unit and add AI component
-            UnitInstance[] units = FindObjectsOfType<UnitInstance>();
-            UnitInstance newestUnit = null;
-            foreach (var unit in units)
-            {
-                if (unit.ArmyID == 1 && unit.GetComponent<EnemyAI>() == null)
-                {
-                    newestUnit = unit;
-                    break;
-                }
-            }
-
-            if (newestUnit != null)
-            {
-                SetupEnemyAI(newestUnit);
-            }
+            SpawnWithArmyManager(spawnPoint.position);
         }
         else
         {
-            // Manual spawning if no army manager
             SpawnEnemyManual(spawnPoint.position);
         }
 
-        Debug.Log($"{name}: Spawned enemy at {spawnPoint.position}");
+        if (enableDebugLogs)
+            Debug.Log($"{name}: Spawned enemy at {spawnPoint.position}");
+    }
+
+    private void SpawnWithArmyManager(Vector3 position)
+    {
+        enemyArmyManager.SpawnUnit(position);
+        StartCoroutine(SetupNewlySpawnedUnit());
+    }
+
+    private IEnumerator SetupNewlySpawnedUnit()
+    {
+        yield return null;
+
+        UnitInstance[] units = FindObjectsOfType<UnitInstance>();
+        UnitInstance newestUnit = null;
+
+        foreach (var unit in units)
+        {
+            if (unit.ArmyID == 1 && unit.GetComponent<UnifiedEnemyAI>() == null)
+            {
+                newestUnit = unit;
+                break;
+            }
+        }
+
+        if (newestUnit != null)
+        {
+            SetupUnifiedAI(newestUnit);
+        }
     }
 
     private void SpawnEnemyManual(Vector3 position)
@@ -156,94 +175,24 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        // Initialize the unit
         unit.Initialize(pathfinder, enemyUnitType, gridManager, visualizer, 1);
-
-        // Setup AI
-        SetupEnemyAI(unit);
+        SetupUnifiedAI(unit);
     }
 
-    private void SetupEnemyAI(UnitInstance unit)
+    private void SetupUnifiedAI(UnitInstance unit)
     {
-        // Add AI component if it doesn't exist
-        EnemyAI ai = unit.GetComponent<EnemyAI>();
-        if (ai == null)
-        {
-            ai = unit.gameObject.AddComponent<EnemyAI>();
-        }
+        // Add the unified AI component
+        UnifiedEnemyAI unifiedAI = unit.gameObject.AddComponent<UnifiedEnemyAI>();
+        unifiedAI.SetDebugLogs(enableDebugLogs);
 
-        // Add SimpleAutoAttack for intelligent combat
-        SimpleAutoAttack autoAttack = unit.GetComponent<SimpleAutoAttack>();
-        if (autoAttack == null)
-        {
-            autoAttack = unit.gameObject.AddComponent<SimpleAutoAttack>();
-        }
-
-        // Set castle target and immediately start moving
+        // Set castle target
         if (playerCastle != null)
         {
-            ai.SetCastleTarget(playerCastle);
-
-            // Force immediate pathfinding to castle
-            StartCoroutine(StartMovementTowardsCastle(unit));
+            unifiedAI.SetCastleTarget(playerCastle);
         }
 
-        Debug.Log($"{name}: Added AI and SimpleAutoAttack to {unit.name}");
-    }
-
-    private IEnumerator StartMovementTowardsCastle(UnitInstance unit)
-    {
-        // Wait a frame for the unit to fully initialize
-        yield return null;
-
-        if (unit != null && playerCastle != null)
-        {
-            // Get grid manager and find path to castle
-            if (gridManager != null)
-            {
-                GridNode castleNode = gridManager.GetNearestWalkableNode(playerCastle.position);
-                if (castleNode != null)
-                {
-                    unit.MoveTo(castleNode);
-                    Debug.Log($"{unit.name}: Started moving toward castle at {playerCastle.position}");
-                }
-                else
-                {
-                    Debug.LogWarning($"{unit.name}: Could not find walkable path to castle!");
-                }
-            }
-        }
-    }
-
-    // Manual spawn for testing
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E)) // Press E to spawn enemy
-        {
-            SpawnEnemy();
-        }
-
-        if (Input.GetKeyDown(KeyCode.T)) // Press T to toggle auto-spawn
-        {
-            ToggleAutoSpawn();
-        }
-    }
-
-    public void ToggleAutoSpawn()
-    {
-        autoSpawn = !autoSpawn;
-
-        if (autoSpawn && spawnCoroutine == null)
-        {
-            spawnCoroutine = StartCoroutine(AutoSpawnRoutine());
-        }
-        else if (!autoSpawn && spawnCoroutine != null)
-        {
-            StopCoroutine(spawnCoroutine);
-            spawnCoroutine = null;
-        }
-
-        Debug.Log($"{name}: Auto-spawn {(autoSpawn ? "enabled" : "disabled")}");
+        if (enableDebugLogs)
+            Debug.Log($"{name}: Added UnifiedEnemyAI to {unit.name}");
     }
 
     public void SetSpawnInterval(float interval)
@@ -256,16 +205,26 @@ public class EnemySpawner : MonoBehaviour
         maxEnemies = max;
     }
 
+    public void SetPlayerCastle(Transform castle)
+    {
+        playerCastle = castle;
+
+        // Update all existing unified AIs
+        UnifiedEnemyAI[] existingAIs = FindObjectsOfType<UnifiedEnemyAI>();
+        foreach (var ai in existingAIs)
+        {
+            ai.SetCastleTarget(castle);
+        }
+
+        if (enableDebugLogs)
+            Debug.Log($"Player castle set to: {(castle ? castle.name : "null")}");
+    }
+
     void OnDestroy()
     {
         if (spawnCoroutine != null)
         {
             StopCoroutine(spawnCoroutine);
         }
-    }
-    public void SetPlayerCastle(Transform castle)
-    {
-        playerCastle = castle;
-        Debug.Log($"Player castle set to: {(castle ? castle.name : "null")}");
     }
 }

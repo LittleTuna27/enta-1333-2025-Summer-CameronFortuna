@@ -153,7 +153,7 @@ public class UnitInstance : UnitBase, IDamageable
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
 
         // If the target node is not walkable, find the nearest walkable one
-        if (targetNode != null && (!targetNode.walkable || targetNode.IsOccupied))
+        if (targetNode != null && (!targetNode.walkable || !targetNode.IsOccupied))
         {
             Debug.Log($"{name}: Target node is blocked, finding nearest walkable node");
             targetNode = gridManager.GetNearestWalkableNode(targetNode.WorldPosition);
@@ -164,10 +164,18 @@ public class UnitInstance : UnitBase, IDamageable
                 state = UnitState.Idle;
                 return;
             }
-        } 
-        List<GridNode> searched;
-        currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
-        Debug.Log($"{name} path found with {currentPath?.Count ?? 0} nodes.");
+        }
+        try
+        {
+            List<GridNode> searched;
+            currentPath = pathfinder.FindPath(gridManager, startNode, targetNode, out searched);
+            Debug.Log($"{name} path found with {currentPath?.Count ?? 0} nodes.");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"{name} pathfinding failed: {ex.Message}");
+            currentPath = null;
+        }
 
         //start movement path traversal if there is a path
         if (currentPath != null && currentPath.Count > 0)
@@ -252,36 +260,22 @@ public class UnitInstance : UnitBase, IDamageable
         }
         Debug.Log($"{name} deselected.");
     }
+
+    // Enhanced attack target management
     public void SetAttackTarget(IDamageable target)
     {
         AttackTarget = target;
 
-        // Also set as current target for backward compatibility
-        if (target is UnitBase unitTarget)
+        // Stop movement when we set an attack target
+        if (target != null && state == UnitState.Moving)
         {
-            CurrentTarget = unitTarget;
+            StopMovement();
         }
+    }
 
-        // Move towards the target using smart pathfinding
-        if (target != null)
-        {
-            Transform targetTransform = GetTargetTransform(target);
-            if (targetTransform != null)
-            {
-                // Use GridManager's GetNearestWalkableNode to find a walkable node near the target
-                GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
-                if (targetNode != null)
-                {
-                    MoveTo(targetNode);
-                    state = UnitState.Moving;
-                    Debug.Log($"{name} moving to attack {GetTargetName(target)} at nearest walkable position");
-                }
-                else
-                {
-                    Debug.LogWarning($"{name}: Cannot find walkable path to attack target {GetTargetName(target)}");
-                }
-            }
-        }
+    public void ClearAttackTarget()
+    {
+        AttackTarget = null;
     }
     private Transform GetTargetTransform(IDamageable target)
     {
@@ -295,16 +289,7 @@ public class UnitInstance : UnitBase, IDamageable
         }
         return null;
     }
-    public void ClearAttackTarget()
-    {
-        AttackTarget = null;
-        CurrentTarget = null;
-        // Optionally change state back to idle if not doing anything else
-        if (state == UnitState.Attacking)
-        {
-            state = UnitState.Idle;
-        }
-    }
+  
     public void Attackmode()
     {
         // Check if we have a specific attack target
@@ -328,7 +313,7 @@ public class UnitInstance : UnitBase, IDamageable
                 // Check if enough time has passed since last attack
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
-                    SoundPracticePlayer.Instance.PlaySound(4, AudioSourceType.SFX);
+                    //SoundPracticePlayer.Instance.PlaySound(4, AudioSourceType.SFX);
                     PerformAttack(AttackTarget);
                     lastAttackTime = Time.time;
                 }
@@ -492,5 +477,42 @@ public class UnitInstance : UnitBase, IDamageable
         {
             healthSlider.value = currentHealth;
         }
+    }
+    public void StopMovement()
+    {
+        // Clear the current path
+        if (CurrentPath != null)
+        {
+            CurrentPath.Clear();
+        }
+
+        // Set state to idle if currently moving
+        if (state == UnitState.Moving)
+        {
+            state = UnitState.Idle;
+        }
+
+        // Stop any movement coroutines if they exist
+        // Note: Adjust this based on your actual movement implementation
+        StopAllCoroutines();
+
+        Debug.Log($"{name}: Movement stopped");
+    }
+
+
+    // Method to check if unit should stop moving when attacking
+    public bool ShouldStopMovementForAttack()
+    {
+        return AttackTarget != null && state == UnitState.Moving;
+    }
+
+    // Get current target position for AI calculations
+    public Vector3? GetAttackTargetPosition()
+    {
+        if (AttackTarget != null)
+        {
+            return AttackTarget.GetPosition();
+        }
+        return null;
     }
 }

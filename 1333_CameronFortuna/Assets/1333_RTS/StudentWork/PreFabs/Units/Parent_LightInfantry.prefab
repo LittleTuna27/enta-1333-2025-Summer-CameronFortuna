@@ -13,10 +13,8 @@ GameObject:
   - component: {fileID: 3292951225467644110}
   - component: {fileID: -2568127679283175984}
   - component: {fileID: -1298687848761512058}
-  - component: {fileID: -4094953509174337007}
-  - component: {fileID: 4953874865336299558}
   m_Layer: 6
-  m_Name: Parent_Enemy_LightInfantry 1
+  m_Name: Parent_LightInfantry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132,38 +130,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &-4094953509174337007
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4863667100732135418}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebc30a1243a434d4bbf341b128151b49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pathfindingInterval: 2
-  detectionRange: 5
-  castleDetectionRange: 15
-  playerCastle: {fileID: 0}
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &4953874865336299558
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4863667100732135418}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e92034e436aa817408a97124a53bf3de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  checkInterval: 0.5
 --- !u!1001 &4961549647919334464
 PrefabInstance:
   m_ObjectHideFlags: 0

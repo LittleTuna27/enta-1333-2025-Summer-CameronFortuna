@@ -13,12 +13,9 @@ public class BuildingPlacementUI : MonoBehaviour
     {
         foreach (BuildingData t in BuildingData.Buildings)
         {
-            SelectBuildingButton Button = Instantiate(ButtonPrefab,LayoutGroupParent);
+            SelectBuildingButton Button = Instantiate(ButtonPrefab, LayoutGroupParent);
             Button.Setup(t);
-            
-             Button.GetComponent<Button>().onClick.AddListener(() => {
-                SoundPracticePlayer.Instance.PlaySound(SoundNumber);
-            });
+
         }
-    }
+        }
 }

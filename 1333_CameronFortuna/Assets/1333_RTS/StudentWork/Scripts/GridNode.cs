@@ -12,7 +12,7 @@ public class GridNode
     public bool IsOccupied = false; // Add this
 
     public GridNode CameFromNode;
-
+    public GameObject OccupyingObject;
     public int MovementCost => terrainType != null ? terrainType.MovementCost : 1;
     public int GCost;
     public int HCost;
