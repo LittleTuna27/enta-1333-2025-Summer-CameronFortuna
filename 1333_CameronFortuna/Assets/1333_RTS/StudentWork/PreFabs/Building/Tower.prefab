@@ -85,6 +85,8 @@ MonoBehaviour:
   healthBar: {fileID: 8086751134070120737}
   destroyOnZeroHealth: 1
   destroyDelay: 0.5
+  buildingSize: {x: 1, y: 1}
+  buildingOffset: {x: 0, y: 0}
 --- !u!65 &4909746496578413887
 BoxCollider:
   m_ObjectHideFlags: 0

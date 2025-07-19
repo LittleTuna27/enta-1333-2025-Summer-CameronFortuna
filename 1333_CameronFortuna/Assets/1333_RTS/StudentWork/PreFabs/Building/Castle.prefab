@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4371542238301575328}
   - component: {fileID: 6542047491972585456}
   - component: {fileID: 2619612300660708342}
-  - component: {fileID: 5869048502674231366}
+  - component: {fileID: -3666130357249384298}
   m_Layer: 0
   m_Name: Castle
   m_TagString: Castle
@@ -68,6 +68,8 @@ MonoBehaviour:
   healthBar: {fileID: 415801970401382606}
   destroyOnZeroHealth: 1
   destroyDelay: 0.5
+  buildingSize: {x: 4, y: 4}
+  buildingOffset: {x: 0, y: 0}
 --- !u!65 &2619612300660708342
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -83,13 +85,13 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 12, y: 12, z: 12}
+  m_Size: {x: 10, y: 10, z: 10}
   m_Center: {x: 0, y: 5, z: 0}
---- !u!114 &5869048502674231366
+--- !u!114 &-3666130357249384298
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,19 +100,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 6734835977640512929}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30177deaa821f5541afde8a6d749f5e7, type: 3}
+  m_Script: {fileID: 11500000, guid: 97d1ee55b3afbbf419f628e499ed40d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  castleHealth: {fileID: 6542047491972585456}
-  autoFindCastleHealth: 1
-  enemyLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  debugMode: 1
-  maxSimultaneousAttackers: 5
-  organizeAttackPositions: 0
-  attackPositions: []
-  attackPositionRadius: 2
+  gameOverSceneName: GameOverScene
+  gameOverDelay: 2
+  useSceneLoader: 0
+  sceneLoader: {fileID: 0}
+  simpleSceneChanger: {fileID: 0}
 --- !u!1 &8108108496932173708
 GameObject:
   m_ObjectHideFlags: 0

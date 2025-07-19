@@ -17,6 +17,6 @@ MonoBehaviour:
   _damage: 15
   _defence: 5
   _attackType: 0
-  _range: 2
+  _range: 1
   _width: 1
   _height: 1

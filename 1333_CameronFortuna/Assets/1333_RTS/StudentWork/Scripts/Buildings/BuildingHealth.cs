@@ -134,4 +134,37 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             healthBar.SetHealth(currentHealth);
         }
     }
+
+    // Add these fields to your BuildingHealth class
+    [Header("Building Dimensions")]
+    [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // Width x Height in grid units
+    [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // Offset from center if needed
+
+    // Public getter for other scripts
+    public Vector2Int BuildingSize => buildingSize;
+    public Vector2Int BuildingOffset => buildingOffset;
+
+    // Method to get the radius (distance from center to edge)
+    public int GetBuildingRadius()
+    {
+        return Mathf.Max(
+            Mathf.FloorToInt(buildingSize.x / 2f),
+            Mathf.FloorToInt(buildingSize.y / 2f)
+        );
+    }
+
+    // Method to check if a grid position is occupied by this building
+    public bool OccupiesGridPosition(Vector2Int gridPos, Vector2Int buildingCenter)
+    {
+        Vector2Int halfSize = new Vector2Int(
+            Mathf.FloorToInt(buildingSize.x / 2f),
+            Mathf.FloorToInt(buildingSize.y / 2f)
+        );
+
+        return gridPos.x >= buildingCenter.x - halfSize.x &&
+               gridPos.x <= buildingCenter.x + halfSize.x &&
+               gridPos.y >= buildingCenter.y - halfSize.y &&
+               gridPos.y <= buildingCenter.y + halfSize.y;
+    }
+
 }

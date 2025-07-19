@@ -70,41 +70,106 @@ public class EnemyAI : MonoBehaviour
         return candidateNodes[0];
     }
 
+    private GridNode FindBestAttackPositionAroundBuilding(Vector3 buildingCenter)
+    {
+        GridManager grid = unitInstance.gridManager;
+        if (grid == null) return null;
+
+        Vector2Int centerGrid = grid.GetGridPositionFromWorld(buildingCenter);
+        int buildingRadius = GetActualBuildingRadius(buildingCenter);
+        int attackRange = unitInstance.AttackRange;
+
+        List<GridNode> attackPositions = new List<GridNode>();
+
+        // Find all positions within attack range of the building
+        for (int x = -buildingRadius - attackRange; x <= buildingRadius + attackRange; x++)
+        {
+            for (int y = -buildingRadius - attackRange; y <= buildingRadius + attackRange; y++)
+            {
+                Vector2Int checkPos = new Vector2Int(centerGrid.x + x, centerGrid.y + y);
+                GridNode node = grid.GetNode(checkPos.x, checkPos.y);
+
+                if (node != null && node.walkable && !node.IsOccupied)
+                {
+                    // Check if this position can attack the building
+                    int deltaX = Mathf.Max(0, Mathf.Abs(x) - buildingRadius);
+                    int deltaY = Mathf.Max(0, Mathf.Abs(y) - buildingRadius);
+                    int distanceToBuilding = deltaX + deltaY;
+
+                    if (distanceToBuilding <= attackRange)
+                    {
+                        attackPositions.Add(node);
+                    }
+                }
+            }
+        }
+
+        if (attackPositions.Count == 0) return null;
+
+        // Sort by distance to our current position
+        Vector3 ourPosition = transform.position;
+        attackPositions.Sort((a, b) =>
+        {
+            float distA = Vector3.Distance(ourPosition, a.WorldPosition);
+            float distB = Vector3.Distance(ourPosition, b.WorldPosition);
+            return distA.CompareTo(distB);
+        });
+
+        return attackPositions[0];
+    }
+
+    private int GetActualBuildingRadius(Vector3 buildingCenter)
+    {
+        // Try to get the BuildingHealth component to get actual size
+        Collider[] colliders = Physics.OverlapSphere(buildingCenter, 0.1f);
+        foreach (var collider in colliders)
+        {
+            BuildingHealth building = collider.GetComponent<BuildingHealth>();
+            if (building != null)
+            {
+                return building.GetBuildingRadius();
+            }
+        }
+
+        // Fallback to estimation if BuildingHealth not found
+        return EstimateBuildingSize(unitInstance.gridManager.GetGridPositionFromWorld(buildingCenter));
+    }
+
     private int EstimateBuildingSize(Vector2Int centerGrid)
     {
         GridManager grid = unitInstance.gridManager;
 
         // Check in expanding squares to find the building's approximate size
-        for (int radius = 1; radius <= 4; radius++) // Max check up to 4x4 + some buffer
+        for (int radius = 0; radius <= 6; radius++) // Increased from 4 to 6 for larger buildings
         {
-            bool foundWalkableInRing = false;
+            bool foundWalkableSpace = false;
 
-            // Check the perimeter of the current radius
+            // Check all positions at this radius from center
             for (int x = -radius; x <= radius; x++)
             {
                 for (int y = -radius; y <= radius; y++)
                 {
-                    // Only check perimeter nodes (not interior)
-                    if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+                    // Skip interior points, only check the perimeter
+                    if (radius > 0 && Mathf.Abs(x) < radius && Mathf.Abs(y) < radius) continue;
 
                     GridNode node = grid.GetNode(centerGrid.x + x, centerGrid.y + y);
                     if (node != null && node.walkable && !node.IsOccupied)
                     {
-                        foundWalkableInRing = true;
+                        foundWalkableSpace = true;
                         break;
                     }
                 }
-                if (foundWalkableInRing) break;
+                if (foundWalkableSpace) break;
             }
 
-            // If we found walkable nodes at this radius, the building is smaller than this
-            if (foundWalkableInRing)
+            // If we found walkable space at this radius, the building extends to radius-1
+            if (foundWalkableSpace)
             {
-                return radius - 1; // Building radius is one less than where we found walkable space
+                return Mathf.Max(0, radius - 1); // Changed from Max(1, radius-1) to allow for 1x1 buildings
             }
         }
 
-        return 2; // Default fallback for unknown building size
+        return 1; // Default for 1x1 building instead of 2
     }
 
     private List<GridNode> GetNodesInRing(Vector2Int center, int radius)
@@ -141,16 +206,19 @@ public class EnemyAI : MonoBehaviour
         Vector2Int ourGrid = grid.GetGridPositionFromWorld(transform.position);
         Vector2Int buildingGrid = grid.GetGridPositionFromWorld(buildingCenter);
 
-        // Estimate building size
-        int buildingRadius = EstimateBuildingSize(buildingGrid);
-
-        // Check if we're within attack range of any edge of the building
+        // Get the actual building size more accurately
+        int buildingRadius = GetActualBuildingRadius(buildingCenter);
         int attackRange = unitInstance.AttackRange;
 
-        // Calculate minimum distance to building edge
+        // Calculate the minimum distance from our position to any edge of the building
         int deltaX = Mathf.Max(0, Mathf.Abs(ourGrid.x - buildingGrid.x) - buildingRadius);
         int deltaY = Mathf.Max(0, Mathf.Abs(ourGrid.y - buildingGrid.y) - buildingRadius);
-        int distanceToEdge = Mathf.Max(deltaX, deltaY); // Use Chebyshev distance for grid-based games
+
+        // Use Manhattan distance for grid-based attack range
+        int distanceToEdge = deltaX + deltaY;
+
+        //Debug.Log($"{name}: Position ({ourGrid.x}, {ourGrid.y}), Building Center ({buildingGrid.x}, {buildingGrid.y}), " +
+        //          $"Building Radius: {buildingRadius}, Distance to Edge: {distanceToEdge}, Attack Range: {attackRange}");
 
         return distanceToEdge <= attackRange;
     }
@@ -241,7 +309,6 @@ public class EnemyAI : MonoBehaviour
         if (targetCastle != null)
         {
             // Check if we're close enough to attack the castle
-            // Use a more intelligent range check for multi-tile buildings
             if (IsInAttackRangeOfBuilding(targetCastle.transform.position))
             {
                 BuildingHealth castleHealth = targetCastle.GetComponent<BuildingHealth>();
@@ -250,26 +317,21 @@ public class EnemyAI : MonoBehaviour
                     SetAIState(AIState.AttackingCastle);
                     AttackTarget(castleHealth);
 
-                    // STOP MOVEMENT - Force the unit to stop moving and attack
+                    // CRITICAL: Force stop any movement when we can attack
                     if (unitInstance.state == UnitState.Moving)
                     {
                         unitInstance.StopMovement();
-                        Debug.Log($"{name}: Stopped movement to attack castle");
+                        Debug.Log($"{name}: FORCED STOP - Now attacking castle from valid position");
                     }
-                    return;
+                    return; // Exit immediately when attacking
                 }
             }
 
-            // Priority 3: Move toward castle if not already doing so OR if we reached destination but aren't attacking
-            if (currentAIState != AIState.MovingToCastle ||
-                (unitInstance.state == UnitState.Idle && currentAIState == AIState.MovingToCastle))
+            // Priority 3: Move toward castle ONLY if we're not in attack range
+            if (currentAIState != AIState.AttackingCastle) // Don't move if we should be attacking
             {
-                // Only move if we're not already trying to attack the castle
-                if (currentAIState != AIState.AttackingCastle)
-                {
-                    SetAIState(AIState.MovingToCastle);
-                    MoveTowardsCastle();
-                }
+                SetAIState(AIState.MovingToCastle);
+                MoveTowardsCastle();
             }
         }
         else
@@ -343,19 +405,19 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        // Find a walkable node around the castle perimeter
+        // Find the best attack position around the castle
         Vector3 castlePosition = targetCastle.transform.position;
-        GridNode targetNode = FindBestApproachNodeAroundBuilding(castlePosition);
+        GridNode targetNode = FindBestAttackPositionAroundBuilding(castlePosition);
 
         if (targetNode != null)
         {
             targetNodeNearCastle = targetNode;
             unitInstance.MoveTo(targetNode);
-            Debug.Log($"{name}: Moving towards castle perimeter node at {targetNode.WorldPosition}");
+            Debug.Log($"{name}: Moving towards castle attack position at {targetNode.WorldPosition}");
         }
         else
         {
-            Debug.LogWarning($"{name}: Could not find walkable path around castle - trying direct approach");
+            Debug.LogWarning($"{name}: Could not find attack position around castle - trying fallback");
             // Fallback: try to get as close as possible
             GridNode fallbackNode = unitInstance.gridManager.GetNearestWalkableNode(castlePosition);
             if (fallbackNode != null)

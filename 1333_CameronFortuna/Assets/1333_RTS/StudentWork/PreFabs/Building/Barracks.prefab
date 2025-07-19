@@ -60,6 +60,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -174,6 +175,8 @@ MonoBehaviour:
   healthBar: {fileID: 1445607558466937052}
   destroyOnZeroHealth: 1
   destroyDelay: 0.5
+  buildingSize: {x: 3, y: 3}
+  buildingOffset: {x: 0, y: 0}
 --- !u!65 &1174045232119781686
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -38,12 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -560,11 +560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1fbd1159b9740848821f848db5b8a71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &408175814 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 157655932228062796, guid: 17c71b842236aa442bb9598050feef17, type: 3}
-  m_PrefabInstance: {fileID: 2095531864596209545}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -642,8 +637,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!4 &410087041
 Transform:
   m_ObjectHideFlags: 0
@@ -751,6 +750,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &472544201 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 157655932228062796, guid: 17c71b842236aa442bb9598050feef17, type: 3}
+  m_PrefabInstance: {fileID: 2095531864596209545}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &527541283 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1592467883845429447, guid: 17c71b842236aa442bb9598050feef17, type: 3}
@@ -762,12 +766,51 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 408175814}
+  m_GameObject: {fileID: 472544201}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97a79dad27544e041933ce2242dded5e, type: 3}
+  m_Script: {fileID: 11500000, guid: ebc30a1243a434d4bbf341b128151b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitInstance: {fileID: 996904581370333330, guid: 89abedce0e2b65c4d8d08795e1c5050f, type: 3}
+  detectionRange: 5
+  castleSearchRadius: 2
+  playerUnitDetectionRange: 3
+  retargetInterval: 1
+  showDebugGizmos: 1
+--- !u!114 &527541285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472544201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35c3fbf6f51941b45a6f0f18d13fd89b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoAddEnemyAI: 1
+  autoRegisterWithManager: 1
+  detectionRange: 5
+  castleSearchRadius: 2
+  playerUnitDetectionRange: 3
+--- !u!114 &527541286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472544201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552a7fadd2cf2004cad665572c43283f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerCastle: {fileID: 0}
+  autoFindCastle: 1
+  globalRetargetInterval: 5
+  showDebugInfo: 1
 --- !u!1 &813688509
 GameObject:
   m_ObjectHideFlags: 0
@@ -1070,6 +1113,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1111,7 +1155,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1019072990}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 19, y: 0, z: 19}
   m_LocalScale: {x: 4, y: 1, z: 4}
   m_ConstrainProportionsScale: 0
@@ -2036,7 +2080,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7401726025684933039, guid: 17c71b842236aa442bb9598050feef17, type: 3}
       propertyPath: globalDetectionRange
-      value: 2
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 7401726025684933039, guid: 17c71b842236aa442bb9598050feef17, type: 3}
       propertyPath: globalCastleDetectionRange
@@ -2078,7 +2122,13 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 157655932228062796, guid: 17c71b842236aa442bb9598050feef17, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 527541285}
+    - targetCorrespondingSourceObject: {fileID: 157655932228062796, guid: 17c71b842236aa442bb9598050feef17, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 527541284}
+    - targetCorrespondingSourceObject: {fileID: 157655932228062796, guid: 17c71b842236aa442bb9598050feef17, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 527541286}
   m_SourcePrefab: {fileID: 100100000, guid: 17c71b842236aa442bb9598050feef17, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

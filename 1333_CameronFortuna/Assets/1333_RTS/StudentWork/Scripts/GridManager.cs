@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour
 {
@@ -108,12 +107,12 @@ public class GridManager : MonoBehaviour
     public GridNode GetNodeFromWorldPosition(Vector3 position)
     {
         int x = gridSettings.UseXZPlane
-     ? Mathf.FloorToInt(position.x / nodeSize)
-     : Mathf.FloorToInt(position.z / nodeSize);
+            ? Mathf.RoundToInt(position.x / nodeSize)
+            : Mathf.RoundToInt(position.z / nodeSize);
 
         int y = gridSettings.UseXZPlane
-            ? Mathf.FloorToInt(position.z / nodeSize)
-            : Mathf.FloorToInt(position.y / nodeSize);
+            ? Mathf.RoundToInt(position.z / nodeSize)
+            : Mathf.RoundToInt(position.y / nodeSize);
 
         if (x < 0 || x >= gridSettings.GridSizeX || y < 0 || y >= gridSettings.GridSizeY)
             return null;
@@ -123,12 +122,12 @@ public class GridManager : MonoBehaviour
     public Vector2Int GetGridPositionFromWorld(Vector3 worldPosition)
     {
         int x = gridSettings.UseXZPlane
-      ? Mathf.FloorToInt(worldPosition.x / nodeSize)
-      : Mathf.FloorToInt(worldPosition.z / nodeSize);
+            ? Mathf.RoundToInt(worldPosition.x / nodeSize)
+            : Mathf.RoundToInt(worldPosition.z / nodeSize);
 
         int y = gridSettings.UseXZPlane
-            ? Mathf.FloorToInt(worldPosition.z / nodeSize)
-            : Mathf.FloorToInt(worldPosition.y / nodeSize);
+            ? Mathf.RoundToInt(worldPosition.z / nodeSize)
+            : Mathf.RoundToInt(worldPosition.y / nodeSize);
 
         return new Vector2Int(x, y);
     }

@@ -65,7 +65,7 @@ public class UnitInstance : UnitBase, IDamageable
         {
             if (_state != value)
             {
-                Debug.Log($"{name} state changed from {_state} to {value}");
+                //Debug.Log($"{name} state changed from {_state} to {value}");
                 _state = value;
 
                 // Update animator based on state
@@ -74,7 +74,7 @@ public class UnitInstance : UnitBase, IDamageable
         }
     }
 
-    public void Start()
+    private void Start()
     {
         //register this unit to the selection manager if present
         if (UnitSelectionManager.Instance != null)
@@ -95,7 +95,7 @@ public class UnitInstance : UnitBase, IDamageable
         InitializeHealthBar();
     }
 
-    public void Update()
+    private void Update()
     {
         if (state == UnitState.Moving)
         {
@@ -128,7 +128,7 @@ public class UnitInstance : UnitBase, IDamageable
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
-    public void FindArmyManager()
+    private void FindArmyManager()
     {
         // Find the army manager that matches this unit's army ID
         CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
@@ -277,7 +277,7 @@ public class UnitInstance : UnitBase, IDamageable
     {
         AttackTarget = null;
     }
-    public Transform GetTargetTransform(IDamageable target)
+    private Transform GetTargetTransform(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
         {
@@ -289,7 +289,62 @@ public class UnitInstance : UnitBase, IDamageable
         }
         return null;
     }
-  
+
+    private GridNode FindBestAttackPositionForBuilding(Vector3 buildingCenter)
+    {
+        Vector2Int centerGrid = gridManager.GetGridPositionFromWorld(buildingCenter);
+
+        // Try to get actual building size
+        BuildingHealth building = null;
+        Collider buildingCollider = Physics.OverlapSphere(buildingCenter, 0.1f)
+            ?.FirstOrDefault()?.GetComponent<Collider>();
+        if (buildingCollider != null)
+        {
+            building = buildingCollider.GetComponent<BuildingHealth>();
+        }
+
+        int buildingRadius = building != null ? building.GetBuildingRadius() : 2; // Default to 4x4 if unknown
+        int attackRange = AttackRange;
+
+        List<GridNode> attackPositions = new List<GridNode>();
+
+        // Find all positions within attack range of the building
+        for (int x = -buildingRadius - attackRange; x <= buildingRadius + attackRange; x++)
+        {
+            for (int y = -buildingRadius - attackRange; y <= buildingRadius + attackRange; y++)
+            {
+                Vector2Int checkPos = new Vector2Int(centerGrid.x + x, centerGrid.y + y);
+                GridNode node = gridManager.GetNode(checkPos.x, checkPos.y);
+
+                if (node != null && node.walkable && !node.IsOccupied)
+                {
+                    // Check if this position can attack the building
+                    int deltaX = Mathf.Max(0, Mathf.Abs(x) - buildingRadius);
+                    int deltaY = Mathf.Max(0, Mathf.Abs(y) - buildingRadius);
+                    int distanceToBuilding = deltaX + deltaY;
+
+                    if (distanceToBuilding <= attackRange)
+                    {
+                        attackPositions.Add(node);
+                    }
+                }
+            }
+        }
+
+        if (attackPositions.Count == 0) return null;
+
+        // Sort by distance to our current position
+        Vector3 ourPosition = transform.position;
+        attackPositions.Sort((a, b) =>
+        {
+            float distA = Vector3.Distance(ourPosition, a.WorldPosition);
+            float distB = Vector3.Distance(ourPosition, b.WorldPosition);
+            return distA.CompareTo(distB);
+        });
+
+        return attackPositions[0];
+    }
+
     public void Attackmode()
     {
         // Check if we have a specific attack target
@@ -303,37 +358,62 @@ public class UnitInstance : UnitBase, IDamageable
                 return;
             }
 
-            float distanceToTarget = Vector3.Distance(transform.position, targetTransform.position);
+            // Use building-aware attack range check
+            bool inAttackRange = IsInAttackRangeOfBuilding(AttackTarget);
 
-            if (distanceToTarget <= AttackRange)
+            if (inAttackRange)
             {
                 // Target is in range - we should be in attacking state
                 state = UnitState.Attacking;
 
+                // STOP MOVEMENT - Very important for buildings!
+                if (isMoving)
+                {
+                    StopMovement();
+                    Debug.Log($"{name}: Stopped movement to attack building");
+                }
+
                 // Check if enough time has passed since last attack
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
-                    //SoundPracticePlayer.Instance.PlaySound(4, AudioSourceType.SFX);
                     PerformAttack(AttackTarget);
                     lastAttackTime = Time.time;
                 }
             }
             else
             {
-                // Target is out of range, keep moving towards it
+                // Target is out of range, move closer only if not already moving
                 if (state != UnitState.Moving)
                 {
-                    // Use GridManager's GetNearestWalkableNode to find a walkable node near the target
-                    GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
-                    if (targetNode != null)
+                    // For buildings, try to find the best attack position
+                    BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
+                    if (building != null)
                     {
-                        MoveTo(targetNode);
+                        GridNode targetNode = FindBestAttackPositionForBuilding(targetTransform.position);
+                        if (targetNode != null)
+                        {
+                            MoveTo(targetNode);
+                            Debug.Log($"{name}: Moving to attack position for building");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"{name}: Cannot find attack position for building");
+                            ClearAttackTarget();
+                        }
                     }
                     else
                     {
-                        Debug.LogWarning($"{name}: Cannot find walkable path to target during attack mode");
-                        // Optionally clear the target if we can't reach it
-                        ClearAttackTarget();
+                        // For units, use nearest walkable node
+                        GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
+                        if (targetNode != null)
+                        {
+                            MoveTo(targetNode);
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"{name}: Cannot find walkable path to target during attack mode");
+                            ClearAttackTarget();
+                        }
                     }
                 }
             }
@@ -347,7 +427,8 @@ public class UnitInstance : UnitBase, IDamageable
             }
         }
     }
-    public void PerformAttack(IDamageable target)
+
+    private void PerformAttack(IDamageable target)
     {
         if (target == null) return;
 
@@ -372,7 +453,7 @@ public class UnitInstance : UnitBase, IDamageable
             state = UnitState.Idle;
         }
     }
-    public string GetTargetName(IDamageable target)
+    private string GetTargetName(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
         {
@@ -439,7 +520,7 @@ public class UnitInstance : UnitBase, IDamageable
 
         Destroy(gameObject, 0.5f); // Small delay for effects
     }
-    public void UpdateAnimator()
+    private void UpdateAnimator()
     {
         if (animator == null) return;
 
@@ -462,7 +543,7 @@ public class UnitInstance : UnitBase, IDamageable
                 break;
         }
     }
-    public void InitializeHealthBar()
+    private void InitializeHealthBar()
     {
         if (healthSlider != null)
         {
@@ -471,7 +552,7 @@ public class UnitInstance : UnitBase, IDamageable
             healthSlider.interactable = false; // Players can't drag it
         }
     }
-    public void UpdateHealthBar()
+    private void UpdateHealthBar()
     {
         if (healthSlider != null)
         {
@@ -514,5 +595,54 @@ public class UnitInstance : UnitBase, IDamageable
             return AttackTarget.GetPosition();
         }
         return null;
+    }
+    private bool IsInAttackRangeOfBuilding(IDamageable target)
+    {
+        Transform targetTransform = GetTargetTransform(target);
+        if (targetTransform == null) return false;
+
+        // Check if target is a building
+        BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
+        if (building != null)
+        {
+            Vector2Int ourGrid = gridManager.GetGridPositionFromWorld(transform.position);
+            Vector2Int buildingGrid = gridManager.GetGridPositionFromWorld(targetTransform.position);
+
+            // Use actual building size
+            int buildingRadius = building.GetBuildingRadius();
+
+            // Calculate distance to building edge
+            int deltaX = Mathf.Max(0, Mathf.Abs(ourGrid.x - buildingGrid.x) - buildingRadius);
+            int deltaY = Mathf.Max(0, Mathf.Abs(ourGrid.y - buildingGrid.y) - buildingRadius);
+            int distanceToEdge = deltaX + deltaY;
+
+            bool inRange = distanceToEdge <= AttackRange;
+
+            //Debug.Log($"{name}: Building attack check - Distance to edge: {distanceToEdge}, Attack range: {AttackRange}, In range: {inRange}, Building size: {building.BuildingSize}");
+
+            return inRange;
+        }
+        else
+        {
+            // For regular units, use simple distance
+            float distance = Vector3.Distance(transform.position, targetTransform.position);
+            return distance <= AttackRange;
+        }
+    }
+
+    private int GetBuildingRadius(IDamageable target)
+    {
+        Transform targetTransform = GetTargetTransform(target);
+        if (targetTransform == null) return 1;
+
+        BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
+        if (building != null)
+        {
+            // Use actual building size if available
+            return building.GetBuildingRadius();
+        }
+
+        // Fallback for units or buildings without size info
+        return 0;
     }
 }
