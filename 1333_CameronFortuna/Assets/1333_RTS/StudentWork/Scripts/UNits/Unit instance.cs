@@ -16,7 +16,7 @@ public class UnitInstance : UnitBase, IDamageable
     [SerializeField] private int armyID = 0; // The army this unit belongs to
     private CurrentTeamArmyManager armyManager;
 
-    private GridManager gridManager;
+    public GridManager gridManager;
     protected AStartPathfinding pathfinder;
 
     protected List<GridNode> currentPath = new();
@@ -74,7 +74,7 @@ public class UnitInstance : UnitBase, IDamageable
         }
     }
 
-    private void Start()
+    public void Start()
     {
         //register this unit to the selection manager if present
         if (UnitSelectionManager.Instance != null)
@@ -95,7 +95,7 @@ public class UnitInstance : UnitBase, IDamageable
         InitializeHealthBar();
     }
 
-    private void Update()
+    public void Update()
     {
         if (state == UnitState.Moving)
         {
@@ -128,7 +128,7 @@ public class UnitInstance : UnitBase, IDamageable
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
-    private void FindArmyManager()
+    public void FindArmyManager()
     {
         // Find the army manager that matches this unit's army ID
         CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
@@ -277,7 +277,7 @@ public class UnitInstance : UnitBase, IDamageable
     {
         AttackTarget = null;
     }
-    private Transform GetTargetTransform(IDamageable target)
+    public Transform GetTargetTransform(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
         {
@@ -347,7 +347,7 @@ public class UnitInstance : UnitBase, IDamageable
             }
         }
     }
-    private void PerformAttack(IDamageable target)
+    public void PerformAttack(IDamageable target)
     {
         if (target == null) return;
 
@@ -372,7 +372,7 @@ public class UnitInstance : UnitBase, IDamageable
             state = UnitState.Idle;
         }
     }
-    private string GetTargetName(IDamageable target)
+    public string GetTargetName(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
         {
@@ -439,7 +439,7 @@ public class UnitInstance : UnitBase, IDamageable
 
         Destroy(gameObject, 0.5f); // Small delay for effects
     }
-    private void UpdateAnimator()
+    public void UpdateAnimator()
     {
         if (animator == null) return;
 
@@ -462,7 +462,7 @@ public class UnitInstance : UnitBase, IDamageable
                 break;
         }
     }
-    private void InitializeHealthBar()
+    public void InitializeHealthBar()
     {
         if (healthSlider != null)
         {
@@ -471,7 +471,7 @@ public class UnitInstance : UnitBase, IDamageable
             healthSlider.interactable = false; // Players can't drag it
         }
     }
-    private void UpdateHealthBar()
+    public void UpdateHealthBar()
     {
         if (healthSlider != null)
         {

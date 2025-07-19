@@ -247,14 +247,6 @@ public class BuildingPlacementManager : MonoBehaviour
 
                 // Check if this is a castle and notify enemy spawners
                 BuildingHealth buildingHealth = newBuilding.GetComponent<BuildingHealth>();
-                if (buildingHealth != null && buildingHealth.ArmyID == 0) // Player army
-                {
-                    if (IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name))
-                    {
-                        NotifyEnemySpawnersOfCastle(newBuilding.transform);
-                        Debug.Log("Castle placed! Enemy spawners have been notified.");
-                    }
-                }
 
                 // Update grid occupancy using the calculated origin
                 for (int x = 0; x < currentSelectedBuilding.BuildingWidth; x++)
@@ -319,23 +311,5 @@ public class BuildingPlacementManager : MonoBehaviour
 
         return lowerBuildingName.Contains("castle") ||
                lowerGameObjectName.Contains("castle");
-    }
-
-    private void NotifyEnemySpawnersOfCastle(Transform castle)
-    {
-        // Find all enemy spawners and tell them about the castle
-        EnemySpawner[] spawners = FindObjectsOfType<EnemySpawner>();
-        foreach (var spawner in spawners)
-        {
-            spawner.SetPlayerCastle(castle);
-        }
-
-        // Also notify AI Manager if it exists
-        if (AIManager.Instance != null)
-        {
-            AIManager.Instance.SetPlayerCastle(castle);
-        }
-
-        Debug.Log($"Notified {spawners.Length} enemy spawners about castle placement");
     }
 }
