@@ -349,7 +349,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (currentAIState != newState)
         {
-            Debug.Log($"{name}: AI State changed from {currentAIState} to {newState}");
+            //Debug.Log($"{name}: AI State changed from {currentAIState} to {newState}");
             currentAIState = newState;
         }
     }

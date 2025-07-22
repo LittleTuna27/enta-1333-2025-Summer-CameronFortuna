@@ -7,6 +7,16 @@ public class SimpleSceneChanger : MonoBehaviour
 {
     public string sceneName;
 
+    public static SimpleSceneChanger SoundManager { get; private set; }
+    private void Awake()
+    {
+        if (SoundManager == null)
+        {
+            SoundManager = this;
+            DontDestroyOnLoad(gameObject);
+        }
+    }
+
     // Use this when assigning from UI Button
     public void LoadScene()
     {

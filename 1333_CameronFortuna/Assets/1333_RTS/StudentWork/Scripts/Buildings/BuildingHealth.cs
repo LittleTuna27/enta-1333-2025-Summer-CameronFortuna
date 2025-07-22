@@ -85,7 +85,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         OnHealthChanged?.Invoke(currentHealth);
 
         string attackerName = attacker != null ? attacker.name : "unknown";
-        Debug.Log($"{BuildingName} took {actualDamage} damage from {attackerName}. Health: {currentHealth}/{maxHealth}");
+        //Debug.Log($"{BuildingName} took {actualDamage} damage from {attackerName}. Health: {currentHealth}/{maxHealth}");
 
         // Check if building was destroyed
         if (currentHealth <= 0 && oldHealth > 0)
@@ -135,7 +135,6 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         }
     }
 
-    // Add these fields to your BuildingHealth class
     [Header("Building Dimensions")]
     [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // Width x Height in grid units
     [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // Offset from center if needed

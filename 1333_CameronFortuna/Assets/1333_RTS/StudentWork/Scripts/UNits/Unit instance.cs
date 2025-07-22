@@ -370,7 +370,7 @@ public class UnitInstance : UnitBase, IDamageable
                 if (isMoving)
                 {
                     StopMovement();
-                    Debug.Log($"{name}: Stopped movement to attack building");
+                    //Debug.Log($"{name}: Stopped movement to attack building");
                 }
 
                 // Check if enough time has passed since last attack
@@ -433,7 +433,7 @@ public class UnitInstance : UnitBase, IDamageable
         if (target == null) return;
 
         string targetName = GetTargetName(target);
-        Debug.Log($"{name} attacks {targetName} for {AttackDamage} damage!");
+        //Debug.Log($"{name} attacks {targetName} for {AttackDamage} damage!");
 
         // Deal damage
         target.TakeDamage(AttackDamage, gameObject);
@@ -577,7 +577,7 @@ public class UnitInstance : UnitBase, IDamageable
         // Note: Adjust this based on your actual movement implementation
         StopAllCoroutines();
 
-        Debug.Log($"{name}: Movement stopped");
+        //Debug.Log($"{name}: Movement stopped");
     }
 
 
