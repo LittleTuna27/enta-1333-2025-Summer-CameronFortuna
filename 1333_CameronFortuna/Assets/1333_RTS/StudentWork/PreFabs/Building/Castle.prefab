@@ -87,7 +87,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 10, y: 10, z: 10}
   m_Center: {x: 0, y: 5, z: 0}
@@ -104,10 +104,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverSceneName: GameOverScene
-  gameOverDelay: 2
-  useSceneLoader: 0
-  sceneLoader: {fileID: 0}
-  simpleSceneChanger: {fileID: 0}
 --- !u!1001 &821809848034982927
 PrefabInstance:
   m_ObjectHideFlags: 0

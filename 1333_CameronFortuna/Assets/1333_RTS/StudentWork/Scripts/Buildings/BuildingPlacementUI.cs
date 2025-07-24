@@ -17,5 +17,5 @@ public class BuildingPlacementUI : MonoBehaviour
             Button.Setup(t);
 
         }
-        }
+     }
 }

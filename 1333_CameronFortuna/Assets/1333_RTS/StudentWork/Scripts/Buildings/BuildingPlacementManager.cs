@@ -237,6 +237,12 @@ public class BuildingPlacementManager : MonoBehaviour
                 GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, Quaternion.identity);
                 newBuilding.transform.localScale = currentSelectedBuilding.Scale;
 
+                // Play placement sound (if available)
+                if (SoundPracticePlayer.Instance != null)
+                {
+                    SoundPracticePlayer.Instance.PlaySound(2, AudioSourceType.UI);
+                }
+
                 // Activate the building after placement
                 DefensiveBuilding defensiveBuilding = newBuilding.GetComponent<DefensiveBuilding>();
                 if (defensiveBuilding != null)
@@ -245,11 +251,28 @@ public class BuildingPlacementManager : MonoBehaviour
                     Debug.Log("Defensive building activated after placement");
                 }
 
-                // Check if this is a castle and notify enemy spawners
+                // Check if this is a castle and notify GameStartController
+                bool isCastle = IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name);
+                if (isCastle)
+                {
+                    Debug.Log("Castle placed! Notifying GameStartController...");
+
+                    // Notify GameStartController that castle has been placed
+                    if (GameStartController.Instance != null)
+                    {
+                        GameStartController.Instance.OnCastlePlacedCallback();
+                    }
+                    else
+                    {
+                        Debug.LogError("GameStartController.Instance is null!");
+                    }
+                }
+
+                // Check if this is a castle for enemy spawners (original functionality)
                 BuildingHealth buildingHealth = newBuilding.GetComponent<BuildingHealth>();
                 if (buildingHealth != null && buildingHealth.ArmyID == 0) // Player army
                 {
-                    if (IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name))
+                    if (isCastle)
                     {
                         //NotifyEnemySpawnersOfCastle(newBuilding.transform);
                         Debug.Log("Castle placed! Enemy spawners have been notified.");
@@ -280,7 +303,7 @@ public class BuildingPlacementManager : MonoBehaviour
         }
     }
 
-   
+
     private bool CanPlaceBuildingAt(int startX, int startY, int width, int height)
     {
         if (gridManager == null) return false;

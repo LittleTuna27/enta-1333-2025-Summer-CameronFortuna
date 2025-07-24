@@ -37,9 +37,3 @@ MonoBehaviour:
     BuildingWidth: 3
     BuildingDepth: 3
     Scale: {x: 0.5, y: 0.5, z: 0.5}
-  - BuildingName: Castle
-    BuildingIcon: {fileID: 0}
-    BuildingPrefab: {fileID: 6734835977640512929, guid: a92dccf014aa75b4d916a3ead691cdbd, type: 3}
-    BuildingWidth: 4
-    BuildingDepth: 4
-    Scale: {x: 0.5, y: 0.5, z: 0.5}

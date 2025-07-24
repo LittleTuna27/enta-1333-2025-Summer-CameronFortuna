@@ -33,17 +33,6 @@ public class BuildingUIManager : MonoBehaviour
         {
             buildingMenuToggleButton.onClick.AddListener(ToggleBuildingMenu);
         }
-
-        // Make sure build mode starts disabled
-        if (BuildModeController.Instance != null)
-        {
-            // If build mode is somehow enabled, disable it
-            if (BuildModeController.Instance.IsInBuildMode)
-            {
-                // We can't directly call ToggleBuildMode, so we'll simulate the B key press
-                // Or you could make ToggleBuildMode public in BuildModeController
-            }
-        }
     }
     private void Update()
     {
@@ -69,9 +58,11 @@ public class BuildingUIManager : MonoBehaviour
     {
         if (isMenuVisible) return;
 
+
         // Enter build mode
         if (BuildModeController.Instance != null && !BuildModeController.Instance.IsInBuildMode)
         {
+
             buildModeController.ToggleBuildMode();
         }
 
@@ -100,6 +91,7 @@ public class BuildingUIManager : MonoBehaviour
     }
     private void AnimateMenu(Vector2 targetPosition, bool willBeVisible)
     {
+        //SoundPracticePlayer.Instance.PlaySound(1, AudioSourceType.SFX);
         if (currentAnimation != null)
         {
             StopCoroutine(currentAnimation);
