@@ -91,7 +91,7 @@ public class BuildingUIManager : MonoBehaviour
     }
     private void AnimateMenu(Vector2 targetPosition, bool willBeVisible)
     {
-        //SoundPracticePlayer.Instance.PlaySound(1, AudioSourceType.SFX);
+        SoundPracticePlayer.Instance.PlaySound(1, AudioSourceType.SFX);
         if (currentAnimation != null)
         {
             StopCoroutine(currentAnimation);

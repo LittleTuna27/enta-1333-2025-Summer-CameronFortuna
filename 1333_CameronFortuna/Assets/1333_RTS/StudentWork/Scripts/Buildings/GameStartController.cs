@@ -42,27 +42,6 @@ public class GameStartController : MonoBehaviour
         gameHasStarted = false;
         castlePlaced = false;
 
-        // Show instruction text
-        if (instructionText != null)
-        {
-            instructionText.text = "Place your castle to begin the game!";
-            instructionText.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("Instruction text is not assigned!");
-        }
-
-        // Check if castle building data is assigned
-        if (castleBuildingData == null)
-        {
-            Debug.LogError("Castle BuildingData is not assigned! Please assign it in the inspector.");
-            return;
-        }
-
-        Debug.Log($"Castle BuildingData assigned: {castleBuildingData.BuildingName}");
-
-        // Force build mode and set castle as active building
         StartCoroutine(ForceBuildModeWithCastle());
     }
 
@@ -71,9 +50,6 @@ public class GameStartController : MonoBehaviour
         // Wait a few frames to ensure all managers are initialized
         yield return new WaitForSeconds(0.5f);
 
-        Debug.Log("Forcing build mode...");
-
-        // Force build mode on
         if (BuildModeController.Instance != null)
         {
             if (!BuildModeController.Instance.IsInBuildMode)
@@ -90,16 +66,8 @@ public class GameStartController : MonoBehaviour
         // Wait another frame
         yield return null;
 
-        // Set castle as the active building
-        if (BuildingPlacementManager.Instance != null && castleBuildingData != null)
-        {
-            Debug.Log($"Setting castle as active building: {castleBuildingData.BuildingName}");
             BuildingPlacementManager.Instance.SetActiveBuilding(castleBuildingData);
-        }
-        else
-        {
-            Debug.LogError($"BuildingPlacementManager: {BuildingPlacementManager.Instance != null}, CastleData: {castleBuildingData != null}");
-        }
+
     }
 
     public void OnCastlePlacedCallback()
@@ -116,30 +84,16 @@ public class GameStartController : MonoBehaviour
             Debug.Log("Cleared active building - no more castles can be placed");
         }
 
-        // DON'T exit build mode yet - wait for countdown to finish
-
         // Update instruction text
         if (instructionText != null)
             instructionText.text = $"Castle placed! Game starting in {countdownDuration} seconds...";
 
-        // Start countdown
-        StartCoroutine(StartGameCountdown());
-    }
+        if (castlePlaced) return;
+        castlePlaced = true;
 
-    private IEnumerator StartGameCountdown()
-    {
-        float timeRemaining = countdownDuration;
-
-        while (timeRemaining > 0)
-        {
-            if (instructionText != null)
-                instructionText.text = $"Game starts in: {Mathf.Ceil(timeRemaining)}";
-
-            yield return new WaitForSeconds(1f);
-            timeRemaining -= 1f;
-        }
-
-        StartGame();
+        BuildingPlacementManager.Instance?.SetActiveBuilding(null);
+        instructionText.text = $"Castle placed! Game starting in {countdownDuration} seconds...";
+        StartCoroutine(CountdownAndStartGame());
     }
 
     private void StartGame()
@@ -158,16 +112,20 @@ public class GameStartController : MonoBehaviour
             Debug.Log("Exited build mode");
         }
 
-        // Clear active building
-        if (BuildingPlacementManager.Instance != null)
-        {
-            BuildingPlacementManager.Instance.SetActiveBuilding(null);
-        }
+        //// Clear active building
+        //if (BuildingPlacementManager.Instance != null)
+        //{
+        //    BuildingPlacementManager.Instance.SetActiveBuilding(null);
+        //}
 
         // Notify other scripts that the game has started
         OnGameStarted?.Invoke();
     }
-
+    private IEnumerator CountdownAndStartGame()
+    {
+        yield return new WaitForSeconds(countdownDuration);
+        StartGame();
+    }
     // Public methods for checking game state
     public bool HasGameStarted()
     {
@@ -184,10 +142,4 @@ public class GameStartController : MonoBehaviour
         return gameHasStarted; // Only allow interaction after game officially starts
     }
 
-    // Method to manually trigger for testing
-    [ContextMenu("Test Castle Placement")]
-    public void TestCastlePlacement()
-    {
-        OnCastlePlacedCallback();
-    }
 }
