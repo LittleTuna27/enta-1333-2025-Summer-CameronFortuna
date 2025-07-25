@@ -6,13 +6,13 @@ public class EnemyAI : MonoBehaviour
 {
     [Header("AI Settings")]
     [SerializeField] private UnitInstance unitInstance;
-    [SerializeField] private float detectionRange = 5f;
-    [SerializeField] private float castleSearchRadius = 2f; // How close to get to castle before attacking
+    //[SerializeField] private float detectionRange = 5f;
+    //[SerializeField] private float castleSearchRadius = 2f; // How close to get to castle before attacking
     [SerializeField] private float playerUnitDetectionRange = 3f;
     [SerializeField] private float retargetInterval = 1f; // How often to check for new targets
 
-    [Header("Debug")]
-    [SerializeField] private bool showDebugGizmos = true;
+    //[Header("Debug")]
+    //[SerializeField] private bool showDebugGizmos = true;
 
     private GameObject targetCastle;
     private GridNode targetNodeNearCastle;

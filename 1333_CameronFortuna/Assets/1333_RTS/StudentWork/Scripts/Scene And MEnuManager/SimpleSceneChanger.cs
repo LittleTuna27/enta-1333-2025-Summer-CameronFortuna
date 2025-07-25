@@ -7,6 +7,7 @@ public class SimpleSceneChanger : MonoBehaviour
 {
     public string sceneName;
 
+
     public static SimpleSceneChanger SoundManager { get; private set; }
     private void Awake()
     {
@@ -20,9 +21,13 @@ public class SimpleSceneChanger : MonoBehaviour
     // Use this when assigning from UI Button
     public void LoadScene()
     {
+       
         LoadSceneByName(sceneName);
     }
-
+    public void PlaySound()
+    {
+        SoundPracticePlayer.Instance.PlaySound(2, AudioSourceType.SFX);
+    }
     // Use this from code to pass in a specific scene
     public void LoadSceneByName(string sceneToLoad)
     {
@@ -31,10 +36,12 @@ public class SimpleSceneChanger : MonoBehaviour
 
     public void QuitGame()
     {
+       
         Application.Quit();
     }
     public void LoadSceneAsync()
     {
+        
         LoadYourAsyncScene();
     }
    

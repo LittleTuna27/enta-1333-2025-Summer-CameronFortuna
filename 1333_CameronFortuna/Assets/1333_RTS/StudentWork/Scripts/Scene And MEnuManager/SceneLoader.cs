@@ -13,11 +13,13 @@ public class SceneLoader : MonoBehaviour
 
     public void LoadSceneWithFade()
     {
+       
         StartCoroutine(LoadSceneRoutine());
     }
 
     private IEnumerator LoadSceneRoutine()
     {
+        
         // Fade to black
         yield return StartCoroutine(Fade(0, 1));
 
