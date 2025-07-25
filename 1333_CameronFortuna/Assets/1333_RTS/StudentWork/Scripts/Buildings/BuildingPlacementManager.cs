@@ -223,7 +223,6 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogWarning("Cannot place building - missing data or ghost instance");
             return;
         }
-
         try
         {
             // Use the same logic as the ghost preview to determine grid coordinates
@@ -238,7 +237,7 @@ public class BuildingPlacementManager : MonoBehaviour
                 GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, Quaternion.identity);
                 newBuilding.transform.localScale = currentSelectedBuilding.Scale;
 
-                // Play sound if available
+                // Play placement sound (if available)
                 if (SoundPracticePlayer.Instance != null)
                 {
                     SoundPracticePlayer.Instance.PlaySound(2, AudioSourceType.UI);
@@ -252,29 +251,6 @@ public class BuildingPlacementManager : MonoBehaviour
                     Debug.Log("Defensive building activated after placement");
                 }
 
-<<<<<<< Updated upstream
-                // Check if this is a castle and notify GameStartController
-                if (IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name))
-                {
-                    Debug.Log("Castle detected! Notifying GameStartController...");
-
-                    // Check if a castle has already been placed
-                    if (GameStartController.Instance != null)
-                    {
-                        if (GameStartController.Instance.IsCastlePlaced())
-                        {
-                            Debug.LogWarning("Castle already placed! Destroying duplicate castle.");
-                            Destroy(newBuilding);
-                            return;
-                        }
-
-                        GameStartController.Instance.OnCastlePlacedCallback();
-                        Debug.Log("GameStartController notified of castle placement");
-                    }
-                    else
-                    {
-                        Debug.LogWarning("GameStartController.Instance is null - cannot notify of castle placement");
-=======
                 // Check if this is a castle for enemy spawners
                 BuildingHealth buildingHealth = newBuilding.GetComponent<BuildingHealth>();
                 if (buildingHealth != null && buildingHealth.ArmyID == 0) // Player army
@@ -284,7 +260,6 @@ public class BuildingPlacementManager : MonoBehaviour
                     {
                         //NotifyEnemySpawnersOfCastle(newBuilding.transform);
                         Debug.Log("Castle placed! Enemy spawners have been notified.");
->>>>>>> Stashed changes
                     }
                 }
 
@@ -309,9 +284,9 @@ public class BuildingPlacementManager : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogError($"Failed to place building: {e.Message}");
-            Debug.LogError($"Stack trace: {e.StackTrace}");
         }
     }
+
 
     private bool CanPlaceBuildingAt(int startX, int startY, int width, int height)
     {
