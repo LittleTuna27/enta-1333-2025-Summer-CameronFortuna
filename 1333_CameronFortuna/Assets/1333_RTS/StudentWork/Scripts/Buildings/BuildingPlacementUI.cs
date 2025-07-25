@@ -8,7 +8,7 @@ public class BuildingPlacementUI : MonoBehaviour
     [SerializeField] private RectTransform LayoutGroupParent;
     [SerializeField] private SelectBuildingButton ButtonPrefab;
     [SerializeField] private BuildingTypesSO BuildingData;
-    [SerializeField] private int SoundNumber = 1;
+    //[SerializeField] private int SoundNumber = 1;
     private void Start()
     {
         foreach (BuildingData t in BuildingData.Buildings)

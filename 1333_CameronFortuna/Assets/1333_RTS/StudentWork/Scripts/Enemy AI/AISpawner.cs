@@ -9,10 +9,10 @@ public class EnemyAISpawnerIntegration : MonoBehaviour
     [SerializeField] private bool autoAddEnemyAI = true;
     [SerializeField] private bool autoRegisterWithManager = true;
 
-    [Header("AI Configuration")]
-    [SerializeField] private float detectionRange = 5f;
-    [SerializeField] private float castleSearchRadius = 2f;
-    [SerializeField] private float playerUnitDetectionRange = 3f;
+    //[Header("AI Configuration")]
+    //[SerializeField] private float detectionRange = 5f;
+    //[SerializeField] private float castleSearchRadius = 2f;
+    //[SerializeField] private float playerUnitDetectionRange = 3f;
 
     private void Start()
     {

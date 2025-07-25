@@ -216,7 +216,7 @@ public class BuildingPlacementManager : MonoBehaviour
 
         return origin;
     }
-    private void PlaceBuilding()
+    public void PlaceBuilding()
     {
         if (currentSelectedBuilding == null || ghostInstance == null)
         {
@@ -252,6 +252,7 @@ public class BuildingPlacementManager : MonoBehaviour
                     Debug.Log("Defensive building activated after placement");
                 }
 
+<<<<<<< Updated upstream
                 // Check if this is a castle and notify GameStartController
                 if (IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name))
                 {
@@ -273,6 +274,17 @@ public class BuildingPlacementManager : MonoBehaviour
                     else
                     {
                         Debug.LogWarning("GameStartController.Instance is null - cannot notify of castle placement");
+=======
+                // Check if this is a castle for enemy spawners
+                BuildingHealth buildingHealth = newBuilding.GetComponent<BuildingHealth>();
+                if (buildingHealth != null && buildingHealth.ArmyID == 0) // Player army
+                {
+                    bool isCastle = IsPlayerCastle(currentSelectedBuilding.BuildingName, newBuilding.name);
+                    if (isCastle)
+                    {
+                        //NotifyEnemySpawnersOfCastle(newBuilding.transform);
+                        Debug.Log("Castle placed! Enemy spawners have been notified.");
+>>>>>>> Stashed changes
                     }
                 }
 
