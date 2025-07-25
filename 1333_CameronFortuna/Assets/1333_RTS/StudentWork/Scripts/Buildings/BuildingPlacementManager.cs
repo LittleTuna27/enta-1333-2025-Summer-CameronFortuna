@@ -344,5 +344,6 @@ public class BuildingPlacementManager : MonoBehaviour
     //    }
     //
     //    Debug.Log($"Notified {spawners.Length} enemy spawners about castle placement");
+    //reset original code
     //}
 }

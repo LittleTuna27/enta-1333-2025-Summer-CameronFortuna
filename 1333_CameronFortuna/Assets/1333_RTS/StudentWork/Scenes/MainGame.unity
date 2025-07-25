@@ -770,11 +770,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitInstance: {fileID: 996904581370333330, guid: 89abedce0e2b65c4d8d08795e1c5050f, type: 3}
-  detectionRange: 5
-  castleSearchRadius: 2
   playerUnitDetectionRange: 3
   retargetInterval: 1
-  showDebugGizmos: 1
 --- !u!114 &527541285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -789,9 +786,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoAddEnemyAI: 1
   autoRegisterWithManager: 1
-  detectionRange: 5
-  castleSearchRadius: 2
-  playerUnitDetectionRange: 3
 --- !u!114 &527541286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1534,7 +1528,6 @@ MonoBehaviour:
   LayoutGroupParent: {fileID: 813688510}
   ButtonPrefab: {fileID: 2729504164774745036, guid: 6eb453f06f9e5074da5bb18da59fbc51, type: 3}
   BuildingData: {fileID: 11400000, guid: 2deaa70d78e36d145af1decdff85430a, type: 2}
-  SoundNumber: 0
 --- !u!1 &1598090955
 GameObject:
   m_ObjectHideFlags: 0
@@ -1698,6 +1691,10 @@ PrefabInstance:
     - target: {fileID: 22331464, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 22400762, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 22426080, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchorMax.x
@@ -1907,6 +1904,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 224175272648112170, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -64
+      objectReference: {fileID: 0}
+    - target: {fileID: 224175272648112170, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 52
+      objectReference: {fileID: 0}
     - target: {fileID: 224619367409363176, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2078,7 +2083,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1767357667
 MonoBehaviour:
   m_ObjectHideFlags: 0
