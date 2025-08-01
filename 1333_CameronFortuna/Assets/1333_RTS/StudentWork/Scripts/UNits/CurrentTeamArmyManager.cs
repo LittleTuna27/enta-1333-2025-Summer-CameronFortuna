@@ -43,7 +43,7 @@ public class CurrentTeamArmyManager : MonoBehaviour
         }
 
         // Initialize the unit with army ID
-        unit.Initialize(pathfinder, defaultUnitType, gridManager, visualizer, armyID);
+        unit.Initialize(pathfinder, defaultUnitType, gridManager, armyID);
         currentlyActiveUnits.Add(unit);
 
         // Apply team material using the improved system

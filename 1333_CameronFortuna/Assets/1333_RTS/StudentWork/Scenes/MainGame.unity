@@ -433,7 +433,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 5, y: 8, z: -3}
+  m_LocalPosition: {x: 22.07, y: 20, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1108,7 +1108,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a4398fbb2dbe0a24ea0e728123ef79fd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1147,8 +1147,8 @@ Transform:
   m_GameObject: {fileID: 1019072990}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 19, y: 0, z: 19}
-  m_LocalScale: {x: 4, y: 1, z: 4}
+  m_LocalPosition: {x: 24, y: 0, z: 24}
+  m_LocalScale: {x: 5, y: 1, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1389,7 +1389,14 @@ MonoBehaviour:
   pathFinder: {fileID: 123884185}
   pathfindingLogic: {fileID: 2084382706}
   currentTeamManager: {fileID: 458632820}
-  EnemyTeamManager: {fileID: 1745796420}
+  enemyArmyManager: {fileID: 1745796420}
+  castlePrefab: {fileID: 6734835977640512929, guid: a92dccf014aa75b4d916a3ead691cdbd, type: 3}
+  promptText: {fileID: 1598090956}
+  waveStartDelay: 30
+  enemyPrefabs:
+  - {fileID: 4863667100732135418, guid: 89abedce0e2b65c4d8d08795e1c5050f, type: 3}
+  totalEnemiesInWave: 50
+  enemySpawnInterval: 2
 --- !u!4 &1358333889
 Transform:
   m_ObjectHideFlags: 0
@@ -1733,6 +1740,54 @@ RectTransform:
   m_AnchoredPosition: {x: 40.490234, y: 470.6797}
   m_SizeDelta: {x: 842.6454, y: 138.6407}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1677449503
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1677449505}
+  - component: {fileID: 1677449504}
+  m_Layer: 0
+  m_Name: Resource Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1677449504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1677449503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82621f5298304e847ac02e965f70053d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingCoins: 100
+  OnCoinsChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1677449505
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1677449503}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1745796419
 GameObject:
   m_ObjectHideFlags: 0
@@ -1779,59 +1834,6 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1745796419}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1767357666
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1767357668}
-  - component: {fileID: 1767357667}
-  m_Layer: 0
-  m_Name: GameStartController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1767357667
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1767357666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 708d95a0644ca984ca7016db7c307f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  castleBuildingData:
-    BuildingName: castle
-    BuildingIcon: {fileID: 21300000, guid: 98e8e1cf8dc7dbf469617c2e40c8a944, type: 3}
-    BuildingPrefab: {fileID: 6734835977640512929, guid: a92dccf014aa75b4d916a3ead691cdbd, type: 3}
-    BuildingWidth: 4
-    BuildingDepth: 4
-    Scale: {x: 0.5, y: 0.5, z: 0.5}
-  instructionText: {fileID: 1598090956}
-  countdownDuration: 5
---- !u!4 &1767357668
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1767357666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -2059,4 +2061,4 @@ SceneRoots:
   - {fileID: 383843351}
   - {fileID: 1019072994}
   - {fileID: 2095531864596209545}
-  - {fileID: 1767357668}
+  - {fileID: 1677449505}

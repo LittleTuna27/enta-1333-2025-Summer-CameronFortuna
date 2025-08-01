@@ -20,6 +20,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
 
     [Header("UI References")]
     [SerializeField] private HealthBar healthBar;
+    [SerializeField] private DamageFlash damageFlash;
 
     [Header("Destruction Settings")]
     [SerializeField] private bool destroyOnZeroHealth = true;
@@ -81,6 +82,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         int oldHealth = currentHealth;
         currentHealth = Mathf.Max(0, currentHealth - actualDamage);
 
+        damageFlash.Flash();
         UpdateHealthBar();
         OnHealthChanged?.Invoke(currentHealth);
 

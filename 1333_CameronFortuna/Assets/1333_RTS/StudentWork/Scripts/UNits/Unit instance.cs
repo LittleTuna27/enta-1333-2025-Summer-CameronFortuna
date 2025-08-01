@@ -9,7 +9,7 @@ public class UnitInstance : UnitBase, IDamageable
     [SerializeField] private Animator animator;
     [SerializeField] private SkinnedMeshRenderer unitSkin;
     [SerializeField] private ParticleSystem hurtParticles;
-    [SerializeField] private PathFinderVisualization pathFinderVisulization;
+    [SerializeField] private DamageFlash damageFlash;
 
     [Header("Army Settings")]
     [SerializeField] private int armyID = 0; // The army this unit belongs to
@@ -104,12 +104,11 @@ public class UnitInstance : UnitBase, IDamageable
         Attackmode();
     }
 
-    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, PathFinderVisualization pathFinderVis, int armyID)
+    public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, int armyID)
     {
         this.pathfinder = pathfinder;
         this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();
         gridManager = grid;
-        this.pathFinderVisulization = pathFinderVis;
         this.armyID = armyID;
 
         // Initialize health based on UnitType
@@ -149,6 +148,7 @@ public class UnitInstance : UnitBase, IDamageable
     //handling getting the nodes and call pathfinding and visualizer to get the math and draw the path
     public override void MoveTo(GridNode targetNode)
     {
+       
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
 
         // If the target node is not walkable, find the nearest walkable one
@@ -475,6 +475,7 @@ public class UnitInstance : UnitBase, IDamageable
         int oldHealth = currentHealth;
         currentHealth = Mathf.Max(0, currentHealth - actualDamage);
 
+        damageFlash.Flash();
         UpdateHealthBar();
 
         Debug.Log($"{name} took {actualDamage} damage from {(attacker != null ? attacker.name : "unknown")}. Health: {currentHealth}/{MaxHealth}");

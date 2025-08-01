@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3292951225467644110}
   - component: {fileID: -2568127679283175984}
   - component: {fileID: -1298687848761512058}
+  - component: {fileID: 3299411212431765515}
   m_Layer: 6
   m_Name: Parent_LightInfantry
   m_TagString: Untagged
@@ -53,8 +54,9 @@ MonoBehaviour:
   animator: {fileID: -1298687848761512058}
   unitSkin: {fileID: 4961549647914193744}
   hurtParticles: {fileID: 0}
-  pathFinderVisulization: {fileID: 0}
+  damageFlash: {fileID: 3299411212431765515}
   armyID: 0
+  gridManager: {fileID: 0}
   enemyArmyManager: {fileID: 0}
   attackCooldown: 2
   CurrentTarget: {fileID: 0}
@@ -130,6 +132,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3299411212431765515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4863667100732135418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fdba784e5723c459300e15e7d4a5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!1001 &4961549647919334464
 PrefabInstance:
   m_ObjectHideFlags: 0

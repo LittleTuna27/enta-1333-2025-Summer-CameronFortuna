@@ -17,6 +17,10 @@ public class BuildingPlacementManager : MonoBehaviour
     private bool canPlaceHere = false;
     private bool wasInBuildModeLastFrame = false;
 
+    // Rotation system
+    private int currentRotation = 0; // 0, 90, 180, 270 degrees
+    private readonly int[] rotationAngles = { 0, 90, 180, 270 };
+
     private void Awake()
     {
         Instance = this;
@@ -45,6 +49,12 @@ public class BuildingPlacementManager : MonoBehaviour
             return;
         }
 
+        // Handle rotation input
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RotateBuilding();
+        }
+
         UpdateGhostPreview();
 
         if (Input.GetMouseButtonDown(0) && canPlaceHere)
@@ -52,13 +62,37 @@ public class BuildingPlacementManager : MonoBehaviour
             PlaceBuilding();
         }
     }
+
+    private void RotateBuilding()
+    {
+        currentRotation = (currentRotation + 1) % rotationAngles.Length;
+
+        if (ghostInstance != null)
+        {
+            ApplyRotationToGhost();
+        }
+
+        Debug.Log($"Building rotated to {rotationAngles[currentRotation]} degrees");
+    }
+
+    private void ApplyRotationToGhost()
+    {
+        if (ghostInstance != null)
+        {
+            ghostInstance.transform.rotation = Quaternion.Euler(0, rotationAngles[currentRotation], 0);
+        }
+    }
+
     private void OnEnterBuildMode()
     {
         Debug.Log("Entered build mode");
         // Clean up any existing state when entering build mode
         DestroyGhost();
         canPlaceHere = false;
+        // Reset rotation when entering build mode
+        currentRotation = 0;
     }
+
     private void OnExitBuildMode()
     {
         Debug.Log("Exited build mode");
@@ -66,7 +100,10 @@ public class BuildingPlacementManager : MonoBehaviour
         currentSelectedBuilding = null;
         DestroyGhost();
         canPlaceHere = false;
+        // Reset rotation when exiting build mode
+        currentRotation = 0;
     }
+
     public void SetActiveBuilding(BuildingData buildingData)
     {
         Debug.Log($"SetActiveBuilding called with: {(buildingData != null ? buildingData.BuildingName : "null")}");
@@ -76,11 +113,15 @@ public class BuildingPlacementManager : MonoBehaviour
 
         currentSelectedBuilding = buildingData;
 
+        // Reset rotation when switching buildings
+        currentRotation = 0;
+
         if (buildingData != null && BuildModeController.Instance != null && BuildModeController.Instance.IsInBuildMode)
         {
             CreateGhostInstance();
         }
     }
+
     private void CreateGhostInstance()
     {
         if (currentSelectedBuilding == null)
@@ -106,6 +147,9 @@ public class BuildingPlacementManager : MonoBehaviour
         {
             ghostInstance = Instantiate(currentSelectedBuilding.BuildingPrefab);
             ghostInstance.transform.localScale = currentSelectedBuilding.Scale;
+
+            // Apply current rotation to the new ghost
+            ApplyRotationToGhost();
 
             // Disable any colliders on the ghost to prevent interference
             Collider[] colliders = ghostInstance.GetComponentsInChildren<Collider>();
@@ -133,6 +177,7 @@ public class BuildingPlacementManager : MonoBehaviour
             ghostInstance = null;
         }
     }
+
     private void DestroyGhost()
     {
         if (ghostInstance != null)
@@ -142,6 +187,7 @@ public class BuildingPlacementManager : MonoBehaviour
             canPlaceHere = false;
         }
     }
+
     private void ApplyGhostMaterial(Material mat)
     {
         if (ghostInstance == null || mat == null) return;
@@ -162,6 +208,7 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogError($"Failed to apply ghost material: {e.Message}");
         }
     }
+
     private void UpdateGhostPreview()
     {
         if (ghostInstance == null || currentSelectedBuilding == null)
@@ -178,15 +225,19 @@ public class BuildingPlacementManager : MonoBehaviour
                 // Get the grid position where the mouse is pointing
                 Vector2Int mouseGridCoords = gridManager.GetGridPositionFromWorld(hit.point);
 
-                // For multi-tile buildings, we need to adjust the origin to ensure proper alignment
-                // This ensures the building placement aligns with the grid visualization
-                Vector2Int buildingOrigin = CalculateBuildingOrigin(mouseGridCoords, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
+                // Get rotated building dimensions
+                Vector2Int rotatedDimensions = GetRotatedBuildingDimensions(currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
 
-                Vector3 placePos = CalculateWorldPosition(buildingOrigin, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth, gridManager.nodeSize);
+                // For multi-tile buildings, we need to adjust the origin to ensure proper alignment
+                Vector2Int buildingOrigin = CalculateBuildingOrigin(mouseGridCoords, rotatedDimensions.x, rotatedDimensions.y);
+
+                Vector3 placePos = CalculateWorldPosition(buildingOrigin, rotatedDimensions.x, rotatedDimensions.y, gridManager.nodeSize);
 
                 ghostInstance.transform.position = placePos;
+                // Ensure rotation is maintained
+                ApplyRotationToGhost();
 
-                canPlaceHere = CanPlaceBuildingAt(buildingOrigin.x, buildingOrigin.y, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
+                canPlaceHere = CanPlaceBuildingAt(buildingOrigin.x, buildingOrigin.y, rotatedDimensions.x, rotatedDimensions.y);
                 ApplyGhostMaterial(canPlaceHere ? ghostValidMaterial : ghostInvalidMaterial);
             }
             else
@@ -200,6 +251,20 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogError($"Error in UpdateGhostPreview: {e.Message}");
         }
     }
+
+    private Vector2Int GetRotatedBuildingDimensions(int width, int depth)
+    {
+        // For 90° and 270° rotations, swap width and depth
+        if (currentRotation == 1 || currentRotation == 3) // 90° or 270°
+        {
+            return new Vector2Int(depth, width);
+        }
+        else // 0° or 180°
+        {
+            return new Vector2Int(width, depth);
+        }
+    }
+
     private Vector2Int CalculateBuildingOrigin(Vector2Int mouseGridPos, int buildingWidth, int buildingDepth)
     {
         // For odd-sized buildings (like 3x3), we want the building centered on the mouse position
@@ -216,6 +281,7 @@ public class BuildingPlacementManager : MonoBehaviour
 
         return origin;
     }
+
     public void PlaceBuilding()
     {
         if (currentSelectedBuilding == null || ghostInstance == null)
@@ -223,6 +289,7 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogWarning("Cannot place building - missing data or ghost instance");
             return;
         }
+
         try
         {
             // Use the same logic as the ghost preview to determine grid coordinates
@@ -232,9 +299,12 @@ public class BuildingPlacementManager : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
             {
                 Vector2Int mouseGridCoords = gridManager.GetGridPositionFromWorld(hit.point);
-                Vector2Int buildingOrigin = CalculateBuildingOrigin(mouseGridCoords, currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
+                Vector2Int rotatedDimensions = GetRotatedBuildingDimensions(currentSelectedBuilding.BuildingWidth, currentSelectedBuilding.BuildingDepth);
+                Vector2Int buildingOrigin = CalculateBuildingOrigin(mouseGridCoords, rotatedDimensions.x, rotatedDimensions.y);
 
-                GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, Quaternion.identity);
+                // Create the building with the current rotation
+                Quaternion buildingRotation = Quaternion.Euler(0, rotationAngles[currentRotation], 0);
+                GameObject newBuilding = Instantiate(currentSelectedBuilding.BuildingPrefab, ghostInstance.transform.position, buildingRotation);
                 newBuilding.transform.localScale = currentSelectedBuilding.Scale;
 
                 // Play placement sound (if available)
@@ -263,10 +333,10 @@ public class BuildingPlacementManager : MonoBehaviour
                     }
                 }
 
-                // Update grid occupancy using the calculated origin
-                for (int x = 0; x < currentSelectedBuilding.BuildingWidth; x++)
+                // Update grid occupancy using the rotated dimensions
+                for (int x = 0; x < rotatedDimensions.x; x++)
                 {
-                    for (int y = 0; y < currentSelectedBuilding.BuildingDepth; y++)
+                    for (int y = 0; y < rotatedDimensions.y; y++)
                     {
                         GridNode node = gridManager.GetNode(buildingOrigin.x + x, buildingOrigin.y + y);
                         if (node != null)
@@ -278,7 +348,7 @@ public class BuildingPlacementManager : MonoBehaviour
                     }
                 }
 
-                Debug.Log($"Successfully placed {currentSelectedBuilding.BuildingName} at origin {buildingOrigin}");
+                Debug.Log($"Successfully placed {currentSelectedBuilding.BuildingName} at origin {buildingOrigin} with {rotationAngles[currentRotation]}° rotation");
             }
         }
         catch (System.Exception e)
@@ -286,7 +356,6 @@ public class BuildingPlacementManager : MonoBehaviour
             Debug.LogError($"Failed to place building: {e.Message}");
         }
     }
-
 
     private bool CanPlaceBuildingAt(int startX, int startY, int width, int height)
     {
@@ -306,9 +375,9 @@ public class BuildingPlacementManager : MonoBehaviour
         }
         return true;
     }
+
     private Vector3 CalculateWorldPosition(Vector2Int origin, int width, int height, float nodeSize)
     {
-
         float centerGridX = origin.x + (width - 1) * 0.5f;
         float centerGridY = origin.y + (height - 1) * 0.5f;
 
@@ -318,6 +387,7 @@ public class BuildingPlacementManager : MonoBehaviour
 
         return worldPosition;
     }
+
     private bool IsPlayerCastle(string buildingDataName, string gameObjectName)
     {
         // Check if this building is considered a castle
@@ -328,21 +398,9 @@ public class BuildingPlacementManager : MonoBehaviour
                lowerGameObjectName.Contains("castle");
     }
 
-    //private void NotifyEnemySpawnersOfCastle(Transform castle)
-    //{
-    //    // Find all enemy spawners and tell them about the castle
-    //    EnemySpawner[] spawners = FindObjectsOfType<EnemySpawner>();
-    //    foreach (var spawner in spawners)
-    //    {
-    //        spawner.SetPlayerCastle(castle);
-    //    }
-    //
-    //    // Also notify AI Manager if it exists
-    //    if (AIManager.Instance != null)
-    //    {
-    //        AIManager.Instance.SetPlayerCastle(castle);
-    //    }
-    //
-    //    Debug.Log($"Notified {spawners.Length} enemy spawners about castle placement");
-    //}
+    // Public method to get current rotation (useful for other systems)
+    public int GetCurrentRotation()
+    {
+        return rotationAngles[currentRotation];
+    }
 }

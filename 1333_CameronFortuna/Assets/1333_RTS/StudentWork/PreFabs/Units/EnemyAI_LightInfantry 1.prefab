@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -2568127679283175984}
   - component: {fileID: -1298687848761512058}
   - component: {fileID: -4094953509174337007}
+  - component: {fileID: -5158541944765341696}
   m_Layer: 6
   m_Name: EnemyAI_LightInfantry 1
   m_TagString: Untagged
@@ -54,8 +55,9 @@ MonoBehaviour:
   animator: {fileID: -1298687848761512058}
   unitSkin: {fileID: 4961549647914193744}
   hurtParticles: {fileID: 0}
-  pathFinderVisulization: {fileID: 0}
-  armyID: 0
+  damageFlash: {fileID: -5158541944765341696}
+  armyID: 1
+  gridManager: {fileID: 0}
   enemyArmyManager: {fileID: 0}
   attackCooldown: 2
   CurrentTarget: {fileID: 0}
@@ -143,12 +145,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc30a1243a434d4bbf341b128151b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  updateInterval: 0.5
-  detectionRange: 5
-  castleAttackRange: 4
-  attackCooldown: 1
-  playerCastle: {fileID: 0}
-  showDebugLogs: 1
+  unitInstance: {fileID: 996904581370333330}
+  playerUnitDetectionRange: 3
+  retargetInterval: 1
+--- !u!114 &-5158541944765341696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4863667100732135418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fdba784e5723c459300e15e7d4a5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!1001 &4961549647919334464
 PrefabInstance:
   m_ObjectHideFlags: 0

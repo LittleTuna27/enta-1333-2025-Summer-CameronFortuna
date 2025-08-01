@@ -5,80 +5,150 @@ using UnityEngine;
 public class UnitSpawner : MonoBehaviour
 {
     [Header("Spawner Setup")]
-    [SerializeField] private GameObject unitPrefab;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Transform rallyPoint;
+    [SerializeField] private int unitCost = 10;
 
     [Header("References")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private AStartPathfinding pathfindingLogic;
-    [SerializeField] private UnitType unitType; // Optional: you can define unit stats via ScriptableObject
-    [SerializeField] private PathFinderVisualization pathVis; // Optional: for showing path on spawn
-    
+    [SerializeField] private CurrentTeamArmyManager armyManager;
+
+    [Header("Building Info")]
+    private BuildingHealth buildingHealth;
+
     private void Start()
     {
+        // Get building health to determine which army this belongs to
+        buildingHealth = GetComponent<BuildingHealth>();
+
         if (gridManager == null)
             gridManager = FindAnyObjectByType<GridManager>();
 
-        if (pathfindingLogic == null)
-            pathfindingLogic = FindAnyObjectByType<AStartPathfinding>();
-
-        if (pathVis == null)
-            pathVis = FindAnyObjectByType<PathFinderVisualization>();
+        // If no army manager assigned, try to find the right one based on army ID
+        if (armyManager == null && buildingHealth != null)
+        {
+            CurrentTeamArmyManager[] allManagers = FindObjectsOfType<CurrentTeamArmyManager>();
+            foreach (var manager in allManagers)
+            {
+                if (manager.armyID == buildingHealth.ArmyID)
+                {
+                    armyManager = manager;
+                    break;
+                }
+            }
+        }
     }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha9)) // Press 1 to spawn a unit
+        // Keep the debug key for testing
+        if (Input.GetKeyDown(KeyCode.Alpha9))
         {
-            SpawnUnitPlayer();
+            if (buildingHealth != null && buildingHealth.ArmyID == 0)
+                SpawnUnitPlayer();
+            else
+                SpawnUnitEnemy();
         }
     }
-    public void SpawnUnitPlayer()
+
+    public bool SpawnUnitPlayer()
     {
-        if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
+        // Check if this is a player building
+        if (buildingHealth == null || buildingHealth.ArmyID != 0)
         {
-            Debug.LogError("Missing references for spawning!");
-            return;
+            Debug.LogWarning("Trying to spawn player unit from non-player building!");
+            return false;
         }
 
-        GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
-        UnitInstance unit = newUnit.GetComponent<UnitInstance>();
-
-        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, 0);
-
-        // Send unit to rally point
-        GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);
-        if (targetNode != null)
+        // Check if player has enough coins
+        if (ResourceManager.Instance == null || !ResourceManager.Instance.CanAfford(unitCost))
         {
-            unit.MoveTo(targetNode);
+            Debug.Log($"Cannot afford unit! Need {unitCost} coins, have {(ResourceManager.Instance != null ? ResourceManager.Instance.GetCoins() : 0)}");
+            return false;
         }
-        else
+
+        // Spend the coins
+        if (!ResourceManager.Instance.SpendCoins(unitCost))
         {
-            Debug.LogWarning("Could not find rally node.");
+            Debug.LogError("Failed to spend coins for unit!");
+            return false;
         }
+
+        // Spawn the unit
+        return SpawnUnit();
     }
-    public void SpawnUnitEnemy()
+
+    public bool SpawnUnitEnemy()
     {
-        if (unitPrefab == null || spawnPoint == null || rallyPoint == null || gridManager == null || pathfindingLogic == null)
+        // Enemies don't need to pay coins, just spawn
+        return SpawnUnit();
+    }
+
+    private bool SpawnUnit()
+    {
+        if (armyManager == null)
         {
-            Debug.LogError("Missing references for spawning!");
-            return;
+            Debug.LogError("No army manager assigned to spawner!");
+            return false;
         }
 
-        GameObject newUnit = Instantiate(unitPrefab, spawnPoint.position, Quaternion.identity);
-        UnitInstance unit = newUnit.GetComponent<UnitInstance>();
-
-        unit.Initialize(pathfindingLogic, unitType, gridManager, pathVis, 1);
-
-        // Send unit to rally point
-        GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);
-        if (targetNode != null)
+        if (spawnPoint == null)
         {
-            unit.MoveTo(targetNode);
+            Debug.LogError("No spawn point assigned!");
+            return false;
         }
-        else
+
+        // Use the army manager to spawn the unit
+        UnitInstance newUnit = armyManager.SpawnUnit(spawnPoint.position);
+
+        if (newUnit == null)
         {
-            Debug.LogWarning("Could not find rally node.");
+            Debug.LogError("Failed to spawn unit!");
+            return false;
         }
+
+        // Send unit to rally point if it exists
+        if (rallyPoint != null && gridManager != null)
+        {
+            GridNode targetNode = gridManager.GetNodeFromWorldPosition(rallyPoint.position);
+            if (targetNode != null)
+            {
+                newUnit.MoveTo(targetNode);
+                Debug.Log($"Unit spawned and ordered to rally point");
+            }
+            else
+            {
+                Debug.LogWarning("Could not find rally node - unit will stay at spawn point");
+            }
+        }
+
+        return true;
+    }
+
+    // Public method for UI to check if unit can be spawned
+    public bool CanSpawnUnit()
+    {
+        if (buildingHealth == null) return false;
+
+        // For player units, check coins
+        if (buildingHealth.ArmyID == 0)
+        {
+            return ResourceManager.Instance != null && ResourceManager.Instance.CanAfford(unitCost);
+        }
+
+        // Enemies can always spawn (no resource restriction)
+        return true;
+    }
+
+    // Public method to get unit cost (for UI display)
+    public int GetUnitCost()
+    {
+        return unitCost;
+    }
+
+    // Public method to get army ID (for UI validation)
+    public int GetArmyID()
+    {
+        return buildingHealth != null ? buildingHealth.ArmyID : -1;
     }
 }

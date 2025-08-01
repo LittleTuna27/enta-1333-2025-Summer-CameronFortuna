@@ -9,11 +9,6 @@ public class EnemyAISpawnerIntegration : MonoBehaviour
     [SerializeField] private bool autoAddEnemyAI = true;
     [SerializeField] private bool autoRegisterWithManager = true;
 
-    //[Header("AI Configuration")]
-    //[SerializeField] private float detectionRange = 5f;
-    //[SerializeField] private float castleSearchRadius = 2f;
-    //[SerializeField] private float playerUnitDetectionRange = 3f;
-
     private void Start()
     {
         SetupEnemyAI();
@@ -43,9 +38,7 @@ public class EnemyAISpawnerIntegration : MonoBehaviour
                 // Add EnemyAI component
                 EnemyAI enemyAI = gameObject.AddComponent<EnemyAI>();
 
-                // Configure the AI using reflection or public fields if available
-                ConfigureEnemyAI(enemyAI);
-
+                
                 Debug.Log($"{name}: EnemyAI component added and configured");
             }
 
@@ -58,19 +51,6 @@ public class EnemyAISpawnerIntegration : MonoBehaviour
                 }
             }
         }
-    }
-
-    private void ConfigureEnemyAI(EnemyAI enemyAI)
-    {
-        // Since the EnemyAI fields are private/serialized, we'll need to set them via inspector
-        // or make them public. For now, this method serves as a placeholder for configuration
-
-        // If you make the fields in EnemyAI public, you can set them here:
-        // enemyAI.detectionRange = detectionRange;
-        // enemyAI.castleSearchRadius = castleSearchRadius;
-        // enemyAI.playerUnitDetectionRange = playerUnitDetectionRange;
-
-        Debug.Log($"EnemyAI configured for {name}");
     }
 
     // Call this method from your spawner after instantiating enemy units

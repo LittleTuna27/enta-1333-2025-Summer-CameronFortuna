@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -2934617716918023061}
   - component: {fileID: 5709863634632209090}
   - component: {fileID: -8165156520515940647}
+  - component: {fileID: 2835214688389275671}
   m_Layer: 0
   m_Name: Parent_Cameron_MountedKnight
   m_TagString: Untagged
@@ -52,12 +53,14 @@ MonoBehaviour:
   animator: {fileID: 0}
   unitSkin: {fileID: 0}
   hurtParticles: {fileID: 0}
-  pathFinderVisulization: {fileID: 0}
+  damageFlash: {fileID: 2835214688389275671}
   armyID: 0
+  gridManager: {fileID: 0}
   enemyArmyManager: {fileID: 0}
   attackCooldown: 2
   CurrentTarget: {fileID: 0}
   currentHealth: 0
+  healthSlider: {fileID: 0}
 --- !u!114 &-2934617716918023061
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,6 +122,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2835214688389275671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7902076376865386830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fdba784e5723c459300e15e7d4a5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!1001 &1841962835187645538
 PrefabInstance:
   m_ObjectHideFlags: 0

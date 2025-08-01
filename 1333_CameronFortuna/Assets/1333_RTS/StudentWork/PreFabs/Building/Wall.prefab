@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1867710486855987252}
   - component: {fileID: 8056129855008241434}
   - component: {fileID: 4850548462995527141}
+  - component: {fileID: -790215638587841392}
   m_Layer: 0
   m_Name: Wall
   m_TagString: Untagged
@@ -54,6 +55,7 @@ MonoBehaviour:
     BuildingWidth: 1
     BuildingDepth: 1
     Scale: {x: 1, y: 1, z: 1}
+    BuildingCost: 1
   maxHealth: 100
   currentHealth: 100
   defense: 5
@@ -65,6 +67,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   healthBar: {fileID: 4849553642814970133}
+  damageFlash: {fileID: -790215638587841392}
   destroyOnZeroHealth: 1
   destroyDelay: 0.5
   buildingSize: {x: 1, y: 1}
@@ -90,6 +93,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 5, z: 2}
   m_Center: {x: 0, y: 2, z: 0}
+--- !u!114 &-790215638587841392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3903631858789365080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fdba784e5723c459300e15e7d4a5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!1001 &1601545816578392897
 PrefabInstance:
   m_ObjectHideFlags: 0

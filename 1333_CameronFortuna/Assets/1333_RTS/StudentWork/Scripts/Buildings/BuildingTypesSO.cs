@@ -18,4 +18,5 @@ public class BuildingData
     public int BuildingWidth = 1;
     public int BuildingDepth = 1;
     public Vector3 Scale = Vector3.one;
+    public int BuildingCost = 1;
 }

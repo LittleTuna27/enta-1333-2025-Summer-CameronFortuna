@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6542047491972585456}
   - component: {fileID: 2619612300660708342}
   - component: {fileID: -3666130357249384298}
+  - component: {fileID: 7519393168320567422}
+  - component: {fileID: -2765391084106624997}
   m_Layer: 0
   m_Name: Castle
   m_TagString: Castle
@@ -55,6 +57,7 @@ MonoBehaviour:
     BuildingWidth: 1
     BuildingDepth: 1
     Scale: {x: 1, y: 1, z: 1}
+    BuildingCost: 1
   maxHealth: 100
   currentHealth: 0
   defense: 0
@@ -66,6 +69,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   healthBar: {fileID: 415801970401382606}
+  damageFlash: {fileID: -2765391084106624997}
   destroyOnZeroHealth: 1
   destroyDelay: 0.5
   buildingSize: {x: 4, y: 4}
@@ -104,6 +108,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverSceneName: GameOverScene
+--- !u!114 &7519393168320567422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6734835977640512929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c4f434be6497f2419e9c368b210631e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coinsPerInterval: 10
+  incomeInterval: 10
+  enableDebugLogs: 1
+--- !u!114 &-2765391084106624997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6734835977640512929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4fdba784e5723c459300e15e7d4a5c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!1001 &821809848034982927
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115,6 +148,18 @@ PrefabInstance:
     - target: {fileID: 100000, guid: 637b3bb1a53fd584b8b2f29eddb05290, type: 3}
       propertyPath: m_Name
       value: Castle
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 637b3bb1a53fd584b8b2f29eddb05290, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 637b3bb1a53fd584b8b2f29eddb05290, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 637b3bb1a53fd584b8b2f29eddb05290, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 637b3bb1a53fd584b8b2f29eddb05290, type: 3}
       propertyPath: m_LocalPosition.x
@@ -268,7 +313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7557686408142494567, guid: 3a34ac2ade16e2547b9fa8e9d7e676ca, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 11.22
+      value: 6.52
       objectReference: {fileID: 0}
     - target: {fileID: 7557686408142494567, guid: 3a34ac2ade16e2547b9fa8e9d7e676ca, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

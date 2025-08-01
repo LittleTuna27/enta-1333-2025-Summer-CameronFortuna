@@ -411,6 +411,7 @@ public class EnemyAI : MonoBehaviour
 
         if (targetNode != null)
         {
+            gameObject.transform.LookAt(castlePosition);
             targetNodeNearCastle = targetNode;
             unitInstance.MoveTo(targetNode);
             Debug.Log($"{name}: Moving towards castle attack position at {targetNode.WorldPosition}");
