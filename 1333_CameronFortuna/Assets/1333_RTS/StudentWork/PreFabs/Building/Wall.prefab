@@ -51,7 +51,7 @@ MonoBehaviour:
   buildingData:
     BuildingName: 
     BuildingIcon: {fileID: 0}
-    BuildingPrefab: {fileID: 0}
+    BuildingPrefab: {fileID: 3903631858789365080}
     BuildingWidth: 1
     BuildingDepth: 1
     Scale: {x: 1, y: 1, z: 1}

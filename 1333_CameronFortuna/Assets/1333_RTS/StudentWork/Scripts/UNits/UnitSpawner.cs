@@ -46,9 +46,8 @@ public class UnitSpawner : MonoBehaviour
         {
             if (buildingHealth != null && buildingHealth.ArmyID == 0)
                 SpawnUnitPlayer();
-            else
-                SpawnUnitEnemy();
         }
+
     }
 
     public bool SpawnUnitPlayer()

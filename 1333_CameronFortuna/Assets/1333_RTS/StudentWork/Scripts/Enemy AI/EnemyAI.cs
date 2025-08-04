@@ -6,13 +6,13 @@ public class EnemyAI : MonoBehaviour
 {
     [Header("AI Settings")]
     [SerializeField] private UnitInstance unitInstance;
-    //[SerializeField] private float detectionRange = 5f;
-    //[SerializeField] private float castleSearchRadius = 2f; // How close to get to castle before attacking
+    [SerializeField] private float detectionRange = 5f;
+    [SerializeField] private float castleSearchRadius = 2f; // How close to get to castle before attacking
     [SerializeField] private float playerUnitDetectionRange = 3f;
     [SerializeField] private float retargetInterval = 1f; // How often to check for new targets
 
-    //[Header("Debug")]
-    //[SerializeField] private bool showDebugGizmos = true;
+    [Header("Debug")]
+    [SerializeField] private bool showDebugGizmos = true;
 
     private GameObject targetCastle;
     private GridNode targetNodeNearCastle;
@@ -217,8 +217,8 @@ public class EnemyAI : MonoBehaviour
         // Use Manhattan distance for grid-based attack range
         int distanceToEdge = deltaX + deltaY;
 
-        //Debug.Log($"{name}: Position ({ourGrid.x}, {ourGrid.y}), Building Center ({buildingGrid.x}, {buildingGrid.y}), " +
-        //          $"Building Radius: {buildingRadius}, Distance to Edge: {distanceToEdge}, Attack Range: {attackRange}");
+        Debug.Log($"{name}: Position ({ourGrid.x}, {ourGrid.y}), Building Center ({buildingGrid.x}, {buildingGrid.y}), " +
+                  $"Building Radius: {buildingRadius}, Distance to Edge: {distanceToEdge}, Attack Range: {attackRange}");
 
         return distanceToEdge <= attackRange;
     }
@@ -349,7 +349,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (currentAIState != newState)
         {
-            //Debug.Log($"{name}: AI State changed from {currentAIState} to {newState}");
+            Debug.Log($"{name}: AI State changed from {currentAIState} to {newState}");
             currentAIState = newState;
         }
     }
@@ -411,7 +411,6 @@ public class EnemyAI : MonoBehaviour
 
         if (targetNode != null)
         {
-            gameObject.transform.LookAt(castlePosition);
             targetNodeNearCastle = targetNode;
             unitInstance.MoveTo(targetNode);
             Debug.Log($"{name}: Moving towards castle attack position at {targetNode.WorldPosition}");

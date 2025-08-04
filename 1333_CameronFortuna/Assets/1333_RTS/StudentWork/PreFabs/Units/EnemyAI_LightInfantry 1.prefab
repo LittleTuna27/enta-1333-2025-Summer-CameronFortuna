@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc30a1243a434d4bbf341b128151b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitInstance: {fileID: 996904581370333330}
+  unitInstance: {fileID: 0}
   playerUnitDetectionRange: 3
   retargetInterval: 1
 --- !u!114 &-5158541944765341696

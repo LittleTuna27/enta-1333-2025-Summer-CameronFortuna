@@ -23,6 +23,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int totalEnemiesInWave = 50;
     [SerializeField] private float enemySpawnInterval = 2f; // Time between enemy spawns
 
+    [SerializeField] private int CurrentWave = 0; // Current wave the player is on
+    [SerializeField] private int WavesFinished = 1; // MAx Wave played
+
     // Game state
     private enum GameState { CastlePlacement, WaitingForWave, WaveActive, GameOver }
     private GameState currentState = GameState.CastlePlacement;
@@ -38,6 +41,8 @@ public class GameManager : MonoBehaviour
     private int enemiesSpawned = 0;
     private float lastEnemySpawnTime;
     private Vector3[] spawnCorners;
+
+    [SerializeField] private string YouWinScene = "GameWinScene";
 
     private void Awake()
     {
@@ -69,6 +74,10 @@ public class GameManager : MonoBehaviour
             case GameState.WaveActive:
                 HandleWaveSpawning();
                 break;
+        }
+        if (CurrentWave == WavesFinished)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(YouWinScene);
         }
     }
 
@@ -335,12 +344,16 @@ public class GameManager : MonoBehaviour
 
     private void StartWave()
     {
-        currentState = GameState.WaveActive;
-        enemiesSpawned = 0;
-        lastEnemySpawnTime = Time.time;
+        if (CurrentWave != WavesFinished)
+        {
+            currentState = GameState.WaveActive;
+            enemiesSpawned = 0;
+            lastEnemySpawnTime = Time.time;
 
-        // Hide the prompt text once the wave starts - gameplay begins!
-        HidePromptText();
+            // Hide the prompt text once the wave starts - gameplay begins!
+            HidePromptText();
+        }
+       
     }
 
     private void HandleWaveSpawning()
@@ -375,6 +388,7 @@ public class GameManager : MonoBehaviour
 
     private void CompleteWave()
     {
+        CurrentWave++;
         UpdatePromptText("Wave Complete! Defend your castle!");
         // You could transition to a victory state or start building phase here
     }

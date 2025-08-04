@@ -19,15 +19,6 @@ public class CastleIncomeGenerator : MonoBehaviour
     {
         buildingHealth = GetComponent<BuildingHealth>();
 
-        if (ResourceManager.Instance == null)
-        {
-            Debug.LogError("ResourceManager not found! Castle income will not work.");
-        }
-
-        if (enableDebugLogs)
-        {
-            Debug.Log($"Castle income generator started: {coinsPerInterval} coins every {incomeInterval} seconds");
-        }
     }
 
     private void Update()

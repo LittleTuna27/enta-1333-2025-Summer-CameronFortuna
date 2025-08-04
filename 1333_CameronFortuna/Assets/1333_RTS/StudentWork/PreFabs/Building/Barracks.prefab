@@ -156,9 +156,9 @@ MonoBehaviour:
   buildingData:
     BuildingName: 
     BuildingIcon: {fileID: 0}
-    BuildingPrefab: {fileID: 0}
-    BuildingWidth: 1
-    BuildingDepth: 1
+    BuildingPrefab: {fileID: 5132547315402562204}
+    BuildingWidth: 3
+    BuildingDepth: 3
     Scale: {x: 1, y: 1, z: 1}
     BuildingCost: 1
   maxHealth: 100

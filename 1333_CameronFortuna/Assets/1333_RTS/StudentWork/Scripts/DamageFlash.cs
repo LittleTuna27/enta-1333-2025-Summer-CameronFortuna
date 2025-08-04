@@ -50,14 +50,4 @@ public class DamageFlash : MonoBehaviour
             renderers[i].material = originalMaterials[i];
         }
     }
-
-    void OnDestroy()
-    {
-        // Clean up flash materials
-        for (int i = 0; i < flashMaterials.Length; i++)
-        {
-            if (flashMaterials[i] != null)
-                Destroy(flashMaterials[i]);
-        }
-    }
 }
