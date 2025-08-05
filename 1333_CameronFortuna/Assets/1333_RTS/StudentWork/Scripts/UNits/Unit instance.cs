@@ -152,8 +152,8 @@ public class UnitInstance : UnitBase, IDamageable
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
 
         // If the target node is not walkable, find the nearest walkable one
-        if (targetNode != null && (!targetNode.walkable || !targetNode.IsOccupied))
-        {
+        if (targetNode != null && (!targetNode.walkable || targetNode.IsOccupied))
+            {
             Debug.Log($"{name}: Target node is blocked, finding nearest walkable node");
             targetNode = gridManager.GetNearestWalkableNode(targetNode.WorldPosition);
 
@@ -628,21 +628,5 @@ public class UnitInstance : UnitBase, IDamageable
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             return distance <= AttackRange;
         }
-    }
-
-    private int GetBuildingRadius(IDamageable target)
-    {
-        Transform targetTransform = GetTargetTransform(target);
-        if (targetTransform == null) return 1;
-
-        BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
-        if (building != null)
-        {
-            // Use actual building size if available
-            return building.GetBuildingRadius();
-        }
-
-        // Fallback for units or buildings without size info
-        return 0;
     }
 }

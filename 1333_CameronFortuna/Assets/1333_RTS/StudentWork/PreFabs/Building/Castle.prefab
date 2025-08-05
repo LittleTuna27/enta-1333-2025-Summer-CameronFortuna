@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6542047491972585456}
   - component: {fileID: 2619612300660708342}
   - component: {fileID: -3666130357249384298}
-  - component: {fileID: 7519393168320567422}
   - component: {fileID: -2765391084106624997}
   m_Layer: 0
   m_Name: Castle
@@ -108,21 +107,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverSceneName: GameOverScene
---- !u!114 &7519393168320567422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6734835977640512929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c4f434be6497f2419e9c368b210631e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  coinsPerInterval: 10
-  incomeInterval: 10
-  enableDebugLogs: 1
 --- !u!114 &-2765391084106624997
 MonoBehaviour:
   m_ObjectHideFlags: 0

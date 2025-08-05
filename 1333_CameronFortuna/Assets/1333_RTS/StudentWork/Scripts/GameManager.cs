@@ -7,8 +7,6 @@ public class GameManager : MonoBehaviour
 {
     [Header("Managers")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private UnitManager unitManager;
-    [SerializeField] private PathFinderVisualization pathFinder;
     [SerializeField] private AStartPathfinding pathfindingLogic;
     [SerializeField] private CurrentTeamArmyManager currentTeamManager;
     [SerializeField] private CurrentTeamArmyManager enemyArmyManager;
@@ -18,16 +16,23 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI promptText;
 
     [Header("Wave Settings")]
-    [SerializeField] private float waveStartDelay = 30f; // Time before enemies start spawning
+    [SerializeField] private float waveStartDelay = 30f;
     [SerializeField] private GameObject[] enemyPrefabs;
-    [SerializeField] private int totalEnemiesInWave = 50;
-    [SerializeField] private float enemySpawnInterval = 2f; // Time between enemy spawns
+    [SerializeField] private int baseEnemiesPerWave = 10;
+    [SerializeField] private float enemySpawnInterval = 2f;
+    [SerializeField] private int maxWaves = 5;
+    [SerializeField] private float timeBetweenWaves = 10f;
 
-    [SerializeField] private int CurrentWave = 0; // Current wave the player is on
-    [SerializeField] private int WavesFinished = 1; // MAx Wave played
+    [SerializeField] private string YouWinScene = "GameWinScene";
+
+    // Wave tracking
+    private int currentWave = 0;
+    private int enemiesSpawned = 0;
+    private int enemiesAlive = 0;
+    private List<UnitInstance> currentWaveEnemies = new List<UnitInstance>();
 
     // Game state
-    private enum GameState { CastlePlacement, WaitingForWave, WaveActive, GameOver }
+    private enum GameState { CastlePlacement, WaitingForWave, WaveActive, WaveComplete, Victory, GameOver }
     private GameState currentState = GameState.CastlePlacement;
 
     // Castle placement
@@ -38,11 +43,8 @@ public class GameManager : MonoBehaviour
 
     // Wave spawning
     private float waveTimer;
-    private int enemiesSpawned = 0;
     private float lastEnemySpawnTime;
     private Vector3[] spawnCorners;
-
-    [SerializeField] private string YouWinScene = "GameWinScene";
 
     private void Awake()
     {
@@ -73,11 +75,11 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.WaveActive:
                 HandleWaveSpawning();
+                CheckEnemyStatus();
                 break;
-        }
-        if (CurrentWave == WavesFinished)
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(YouWinScene);
+            case GameState.WaveComplete:
+                HandleWaveComplete();
+                break;
         }
     }
 
@@ -87,18 +89,15 @@ public class GameManager : MonoBehaviour
         int gridSizeY = gridManager.GridSettings.GridSizeY;
         float nodeSize = gridManager.nodeSize;
 
-        // Move 2 squares inward from edges
         int offset = 2;
 
         spawnCorners = new Vector3[4]
         {
-        new Vector3(offset * nodeSize, 0, offset * nodeSize), // Bottom-left corner
-        new Vector3((gridSizeX - offset) * nodeSize, 0, offset * nodeSize), // Bottom-right corner  
-        new Vector3(offset * nodeSize, 0, (gridSizeY - offset) * nodeSize), // Top-left corner
-        new Vector3((gridSizeX - offset) * nodeSize, 0, (gridSizeY - offset) * nodeSize) // Top-right corner
+        new Vector3(offset * nodeSize, 0, offset * nodeSize),
+        new Vector3((gridSizeX - offset) * nodeSize, 0, offset * nodeSize),
+        new Vector3(offset * nodeSize, 0, (gridSizeY - offset) * nodeSize),
+        new Vector3((gridSizeX - offset) * nodeSize, 0, (gridSizeY - offset) * nodeSize)
         };
-
-        Debug.Log($"Spawn corners set up for grid {gridSizeX}x{gridSizeY} with node size {nodeSize}");
     }
 
     private void StartCastlePlacement()
@@ -130,18 +129,14 @@ public class GameManager : MonoBehaviour
         if (castleGhost == null && castlePrefab != null)
         {
             castleGhost = Instantiate(castlePrefab);
-
-            // Preserve the prefab's original scale
             castleGhost.transform.localScale = castlePrefab.transform.localScale;
 
-            // Disable colliders on ghost (following your BuildingPlacementManager pattern)
             Collider[] colliders = castleGhost.GetComponentsInChildren<Collider>();
             foreach (Collider col in colliders)
             {
                 col.enabled = false;
             }
 
-            // Disable scripts on ghost (following your pattern)
             MonoBehaviour[] scripts = castleGhost.GetComponentsInChildren<MonoBehaviour>();
             foreach (MonoBehaviour script in scripts)
             {
@@ -151,7 +146,6 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            // Apply transparent material (simplified version)
             MakeGhostTransparent();
         }
     }
@@ -169,7 +163,6 @@ public class GameManager : MonoBehaviour
                 for (int i = 0; i < renderer.materials.Length; i++)
                 {
                     materials[i] = new Material(renderer.materials[i]);
-                    // Make it semi-transparent
                     Color color = materials[i].color;
                     color.a = 0.5f;
                     materials[i].color = color;
@@ -183,29 +176,19 @@ public class GameManager : MonoBehaviour
     {
         if (castleGhost == null) return;
 
-        // Use your existing raycast approach (excluding DefensiveBuildings layer)
         int layerMask = ~LayerMask.GetMask("DefensiveBuildings");
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
         {
-            // Get grid position using your GridManager method
             Vector2Int mouseGridCoords = gridManager.GetGridPositionFromWorld(hit.point);
-
-            // Castle is 4x4, so calculate origin (following your building placement logic)
             Vector2Int buildingOrigin = CalculateBuildingOrigin(mouseGridCoords, 4, 4);
-
-            // Calculate world position using your approach
             Vector3 worldPos = CalculateWorldPosition(buildingOrigin, 4, 4, gridManager.nodeSize);
             castleGhost.transform.position = worldPos;
 
-            // Check if we can place the castle here (4x4 building)
             canPlaceCastle = CanPlaceBuildingAt(buildingOrigin.x, buildingOrigin.y, 4, 4);
-
-            // Change ghost color based on validity
             UpdateGhostColor(canPlaceCastle);
 
-            // Place castle on click
             if (Input.GetMouseButtonDown(0) && canPlaceCastle)
             {
                 PlaceCastle(buildingOrigin, worldPos);
@@ -220,7 +203,6 @@ public class GameManager : MonoBehaviour
 
     private Vector2Int CalculateBuildingOrigin(Vector2Int mouseGridPos, int buildingWidth, int buildingDepth)
     {
-        // Using your exact logic from BuildingPlacementManager
         int halfWidth = buildingWidth / 2;
         int halfDepth = buildingDepth / 2;
 
@@ -234,7 +216,6 @@ public class GameManager : MonoBehaviour
 
     private Vector3 CalculateWorldPosition(Vector2Int origin, int width, int height, float nodeSize)
     {
-        // Using your exact logic from BuildingPlacementManager
         float centerGridX = origin.x + (width - 1) * 0.5f;
         float centerGridY = origin.y + (height - 1) * 0.5f;
 
@@ -247,7 +228,6 @@ public class GameManager : MonoBehaviour
 
     private bool CanPlaceBuildingAt(int startX, int startY, int width, int height)
     {
-        // Using your exact logic from BuildingPlacementManager
         if (gridManager == null) return false;
 
         for (int xOffset = 0; xOffset < width; xOffset++)
@@ -288,19 +268,15 @@ public class GameManager : MonoBehaviour
 
     private void PlaceCastle(Vector2Int buildingOrigin, Vector3 worldPos)
     {
-        // Instantiate the actual castle
         placedCastle = Instantiate(castlePrefab, worldPos, Quaternion.identity);
-
-        // Preserve the prefab's original scale
         placedCastle.transform.localScale = castlePrefab.transform.localScale;
 
-        // Play placement sound (following your pattern)
         if (SoundPracticePlayer.Instance != null)
         {
             SoundPracticePlayer.Instance.PlaySound(2, AudioSourceType.UI);
         }
 
-        // Update grid occupancy (following your exact pattern)
+        // Update grid occupancy
         for (int x = 0; x < 4; x++)
         {
             for (int y = 0; y < 4; y++)
@@ -310,23 +286,18 @@ public class GameManager : MonoBehaviour
                 {
                     node.walkable = false;
                     node.IsOccupied = true;
-                    Debug.Log($"Occupied grid square: ({buildingOrigin.x + x}, {buildingOrigin.y + y})");
                 }
             }
         }
 
-        // Clean up ghost
         if (castleGhost != null)
         {
             Destroy(castleGhost);
             castleGhost = null;
         }
 
-        // Transition to wave countdown
         currentState = GameState.WaitingForWave;
         waveTimer = waveStartDelay;
-
-        Debug.Log($"Castle placed successfully at origin {buildingOrigin}");
     }
 
     private void HandleWaveCountdown()
@@ -334,7 +305,7 @@ public class GameManager : MonoBehaviour
         waveTimer -= Time.deltaTime;
 
         int secondsLeft = Mathf.CeilToInt(waveTimer);
-        UpdatePromptText($"Wave begins in: {secondsLeft} seconds");
+        UpdatePromptText($"Wave {currentWave + 1} begins in: {secondsLeft} seconds");
 
         if (waveTimer <= 0)
         {
@@ -344,30 +315,57 @@ public class GameManager : MonoBehaviour
 
     private void StartWave()
     {
-        if (CurrentWave != WavesFinished)
-        {
-            currentState = GameState.WaveActive;
-            enemiesSpawned = 0;
-            lastEnemySpawnTime = Time.time;
+        currentState = GameState.WaveActive;
+        enemiesSpawned = 0;
+        enemiesAlive = 0;
+        lastEnemySpawnTime = Time.time;
+        currentWaveEnemies.Clear();
 
-            // Hide the prompt text once the wave starts - gameplay begins!
-            HidePromptText();
-        }
-       
+        HidePromptText();
+    }
+
+    private int GetEnemiesForWave(int wave)
+    {
+        return baseEnemiesPerWave + (wave * 2);
     }
 
     private void HandleWaveSpawning()
     {
-        if (enemiesSpawned < totalEnemiesInWave && Time.time - lastEnemySpawnTime >= enemySpawnInterval)
+        if (enemiesSpawned < GetEnemiesForWave(currentWave) && Time.time - lastEnemySpawnTime >= enemySpawnInterval)
         {
             SpawnEnemy();
             lastEnemySpawnTime = Time.time;
             enemiesSpawned++;
+        }
 
-            if (enemiesSpawned >= totalEnemiesInWave)
+        if (enemiesSpawned >= GetEnemiesForWave(currentWave) && enemiesAlive <= 0)
+        {
+            CompleteWave();
+        }
+    }
+
+    private void CheckEnemyStatus()
+    {
+        for (int i = currentWaveEnemies.Count - 1; i >= 0; i--)
+        {
+            if (currentWaveEnemies[i] == null)
             {
-                CompleteWave();
+                currentWaveEnemies.RemoveAt(i);
+                enemiesAlive--;
             }
+        }
+    }
+
+    private void HandleWaveComplete()
+    {
+        waveTimer -= Time.deltaTime;
+
+        int secondsLeft = Mathf.CeilToInt(waveTimer);
+        UpdatePromptText($"Wave {currentWave + 1} begins in: {secondsLeft} seconds");
+
+        if (waveTimer <= 0)
+        {
+            StartWave();
         }
     }
 
@@ -375,27 +373,45 @@ public class GameManager : MonoBehaviour
     {
         if (enemyPrefabs.Length == 0) return;
 
-        // Pick random enemy and spawn corner
-        GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
         Vector3 spawnPosition = spawnCorners[Random.Range(0, spawnCorners.Length)];
+        UnitInstance enemy = enemyArmyManager.SpawnUnit(spawnPosition);
 
-        enemyArmyManager.SpawnUnit(spawnPosition);
+        if (enemy != null)
+        {
+            currentWaveEnemies.Add(enemy);
+            enemiesAlive++;
 
-        // Set enemy to target the castle if they have the right components
-        // You might want to add specific logic here based on your enemy AI setup
-        Debug.Log($"Spawned enemy at {spawnPosition}");
+            EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
+            if (enemyAI != null && placedCastle != null)
+            {
+                enemyAI.SetTargetCastle(placedCastle);
+            }
+        }
     }
 
     private void CompleteWave()
     {
-        CurrentWave++;
-        UpdatePromptText("Wave Complete! Defend your castle!");
-        // You could transition to a victory state or start building phase here
+        currentWave++;
+        currentWaveEnemies.Clear();
+
+        if (currentWave >= maxWaves)
+        {
+            currentState = GameState.Victory;
+            UpdatePromptText("All waves defeated! Victory!");
+            StartCoroutine(LoadVictoryScene());
+        }
+        else
+        {
+            currentState = GameState.WaveComplete;
+            waveTimer = timeBetweenWaves;
+            UpdatePromptText($"Wave {currentWave} Complete! Next wave in {timeBetweenWaves} seconds");
+        }
     }
 
-    public void OnCastleDestroyed()
+    private IEnumerator LoadVictoryScene()
     {
-        currentState = GameState.GameOver;
-        UpdatePromptText("Castle Destroyed! Game Over!");
+        yield return new WaitForSeconds(3f);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(YouWinScene);
     }
+
 }

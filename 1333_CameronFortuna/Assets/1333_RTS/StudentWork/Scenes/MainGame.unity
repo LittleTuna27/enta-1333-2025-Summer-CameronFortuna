@@ -239,6 +239,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathfindingLogic: {fileID: 2084382706}
+  lineRenderer: {fileID: 0}
 --- !u!1 &148822730
 GameObject:
   m_ObjectHideFlags: 0
@@ -1053,7 +1054,6 @@ MonoBehaviour:
   defaultUnitType: {fileID: 11400000, guid: 989d6464d06c09845a7cc4bccad856e2, type: 2}
   pathfinder: {fileID: 2084382706}
   gridManager: {fileID: 2138901354}
-  visualizer: {fileID: 123884185}
   teamMaterials:
   - {fileID: 2100000, guid: 54f19161a54e56442a8dd7f6239fc93b, type: 2}
 --- !u!4 &458632821
@@ -1968,8 +1968,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridManager: {fileID: 2138901354}
-  unitManager: {fileID: 0}
-  pathFinder: {fileID: 123884185}
   pathfindingLogic: {fileID: 2084382706}
   currentTeamManager: {fileID: 458632820}
   enemyArmyManager: {fileID: 1745796420}
@@ -1978,10 +1976,10 @@ MonoBehaviour:
   waveStartDelay: 30
   enemyPrefabs:
   - {fileID: 4863667100732135418, guid: 89abedce0e2b65c4d8d08795e1c5050f, type: 3}
-  totalEnemiesInWave: 50
+  baseEnemiesPerWave: 10
   enemySpawnInterval: 2
-  CurrentWave: 0
-  WavesFinished: 1
+  maxWaves: 5
+  timeBetweenWaves: 10
   YouWinScene: GameWinScene
 --- !u!4 &1358333889
 Transform:
@@ -2719,54 +2717,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1605810168}
   m_CullTransparentMesh: 1
---- !u!1 &1677449503
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1677449505}
-  - component: {fileID: 1677449504}
-  m_Layer: 0
-  m_Name: Resource Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1677449504
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1677449503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82621f5298304e847ac02e965f70053d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startingCoins: 100
-  OnCoinsChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!4 &1677449505
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1677449503}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1694216804
 GameObject:
   m_ObjectHideFlags: 0
@@ -2877,7 +2827,6 @@ MonoBehaviour:
   defaultUnitType: {fileID: 11400000, guid: 5f7fcc837c993254590de558c091a621, type: 2}
   pathfinder: {fileID: 2084382706}
   gridManager: {fileID: 2138901354}
-  visualizer: {fileID: 123884185}
   teamMaterials:
   - {fileID: 2100000, guid: 98a7fdcb4ebb44344b4afe0424d44b82, type: 2}
   - {fileID: 2100000, guid: 98a7fdcb4ebb44344b4afe0424d44b82, type: 2}
@@ -3302,5 +3251,4 @@ SceneRoots:
   - {fileID: 383843351}
   - {fileID: 1019072994}
   - {fileID: 2095531864596209545}
-  - {fileID: 1677449505}
   - {fileID: 2127785475}

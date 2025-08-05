@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStartPathfinding : Pathfinding_Class
+public class AStartPathfinding : MonoBehaviour
 {
 
     private List<GridNode> searchedNodesForGizmos = new();
