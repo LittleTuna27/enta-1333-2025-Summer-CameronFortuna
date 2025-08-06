@@ -1971,11 +1971,11 @@ MonoBehaviour:
   enemyArmyManager: {fileID: 1745796420}
   castlePrefab: {fileID: 6734835977640512929, guid: a92dccf014aa75b4d916a3ead691cdbd, type: 3}
   promptText: {fileID: 1598090956}
-  waveStartDelay: 30
+  waveStartDelay: 60
   enemyPrefabs:
   - {fileID: 4863667100732135418, guid: 89abedce0e2b65c4d8d08795e1c5050f, type: 3}
   baseEnemiesPerWave: 10
-  enemySpawnInterval: 2
+  enemySpawnInterval: 1
   maxWaves: 5
   timeBetweenWaves: 10
   YouWinScene: GameWinScene
