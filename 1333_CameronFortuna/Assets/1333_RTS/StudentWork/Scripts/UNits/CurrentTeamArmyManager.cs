@@ -18,18 +18,10 @@ public class CurrentTeamArmyManager : MonoBehaviour
 
     [Header("Visual Settings")]
     public Material[] teamMaterials; // Array of materials indexed by army ID
-    public void Start()
-    {
-    }
+
     // Just change this method in CurrentTeamArmyManager.cs
     public UnitInstance SpawnUnit(Vector3 position)
     {
-        if (unitPrefab == null)
-        {
-            Debug.LogError($"{name}: Cannot spawn unit - unitPrefab is null!");
-            return null;
-        }
-
         // Spawn the base unit
         GameObject baseUnit = Instantiate(unitPrefab, position, Quaternion.identity);
         UnitInstance unit = baseUnit.GetComponent<UnitInstance>();

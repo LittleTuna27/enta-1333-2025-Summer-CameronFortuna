@@ -26,6 +26,14 @@ public class BuildingHealth : MonoBehaviour, IDamageable
     [SerializeField] private bool destroyOnZeroHealth = true;
     [SerializeField] private float destroyDelay = 0.5f;
 
+    [Header("Building Dimensions")]
+    [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // Width x Height in grid units
+    [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // Offset from center if needed
+
+    // Grid tracking variables - these need to be set when the building is placed
+    private Vector2Int buildingOrigin;
+    private Vector2Int occupiedGridNode;
+    private GridManager gridManager;
     private bool isDead = false;
 
     // IDamageable interface properties
@@ -40,6 +48,10 @@ public class BuildingHealth : MonoBehaviour, IDamageable
     public bool IsDestroyed => currentHealth <= 0 || isDead;
     public string BuildingName => buildingData?.BuildingName ?? "Unknown Building";
 
+    // Public getter for other scripts
+    public Vector2Int BuildingSize => buildingSize;
+    public Vector2Int BuildingOffset => buildingOffset;
+
     private void Start()
     {
         currentHealth = MaxHealth;
@@ -50,6 +62,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
         FindArmyManager();
+        FindGridManager();
         InitializeHealthBar();
 
         Debug.Log($"Building {BuildingName} initialized - Health: {currentHealth}/{maxHealth}, Defense: {defense}, ArmyID: {armyID}");
@@ -72,6 +85,26 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             Debug.LogWarning($"{BuildingName}: Could not find army manager for Army ID {armyID}");
         }
     }
+
+    private void FindGridManager()
+    {
+        gridManager = FindObjectOfType<GridManager>();
+        if (gridManager == null)
+        {
+            Debug.LogWarning($"{BuildingName}: Could not find GridManager in scene");
+        }
+    }
+
+    // Method to set grid occupation data when building is placed
+    public void SetGridOccupationData(Vector2Int origin, Vector2Int dimensions, GridManager manager)
+    {
+        buildingOrigin = origin;
+        occupiedGridNode = dimensions;
+        gridManager = manager;
+
+        Debug.Log($"{BuildingName} grid data set - Origin: {buildingOrigin}, Dimensions: {occupiedGridNode}");
+    }
+
     // IDamageable interface methods
     public void TakeDamage(int damage, GameObject attacker = null)
     {
@@ -95,6 +128,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             Die();
         }
     }
+
     public void Die()
     {
         if (isDead) return;
@@ -108,6 +142,9 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             Debug.Log($"{BuildingName} removed from Army {armyID}");
         }
 
+        // Clear grid occupation 
+        ClearGridOccupation();
+
         OnBuildingDestroyed?.Invoke();
 
         Debug.Log($"{BuildingName} has been destroyed!");
@@ -118,10 +155,56 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             Destroy(gameObject, destroyDelay);
         }
     }
+
+    private void ClearGridOccupation()
+    {
+        if (gridManager == null)
+        {
+            Debug.LogWarning($"{BuildingName}: Cannot clear grid occupation - GridManager is null");
+            return;
+        }
+
+        // If we don't have the grid data set, try to calculate it from current position
+        if (occupiedGridNode == Vector2Int.zero)
+        {
+            // Fall back to using buildingSize and calculating origin from current position
+            Vector2Int currentGridPos = gridManager.GetGridPositionFromWorld(transform.position);
+            buildingOrigin = new Vector2Int(
+                currentGridPos.x - buildingSize.x / 2,
+                currentGridPos.y - buildingSize.y / 2
+            );
+            occupiedGridNode = buildingSize;
+
+            Debug.LogWarning($"{BuildingName}: Grid data not set, using fallback calculation. Origin: {buildingOrigin}, Size: {occupiedGridNode}");
+        }
+
+        // Update grid occupancy using the stored dimensions
+        for (int x = 0; x < occupiedGridNode.x; x++)
+        {
+            for (int y = 0; y < occupiedGridNode.y; y++)
+            {
+                GridNode node = gridManager.GetNode(buildingOrigin.x + x, buildingOrigin.y + y);
+                if (node != null)
+                {
+                    node.walkable = true;
+                    node.IsOccupied = false;
+                    Debug.Log($"Freed grid square: ({buildingOrigin.x + x}, {buildingOrigin.y + y})");
+                }
+                else
+                {
+                    Debug.LogWarning($"Could not find grid node at ({buildingOrigin.x + x}, {buildingOrigin.y + y})");
+                }
+            }
+        }
+
+        Debug.Log($"{BuildingName}: Successfully cleared {occupiedGridNode.x}x{occupiedGridNode.y} grid area starting at {buildingOrigin}");
+    }
+
     public Vector3 GetPosition()
     {
         return transform.position;
     }
+
     private void InitializeHealthBar()
     {
         if (healthBar != null)
@@ -129,6 +212,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             healthBar.SetMaxHealth(maxHealth);
         }
     }
+
     private void UpdateHealthBar()
     {
         if (healthBar != null)
@@ -136,14 +220,6 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             healthBar.SetHealth(currentHealth);
         }
     }
-
-    [Header("Building Dimensions")]
-    [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // Width x Height in grid units
-    [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // Offset from center if needed
-
-    // Public getter for other scripts
-    public Vector2Int BuildingSize => buildingSize;
-    public Vector2Int BuildingOffset => buildingOffset;
 
     // Method to get the radius (distance from center to edge)
     public int GetBuildingRadius()
@@ -167,5 +243,4 @@ public class BuildingHealth : MonoBehaviour, IDamageable
                gridPos.y >= buildingCenter.y - halfSize.y &&
                gridPos.y <= buildingCenter.y + halfSize.y;
     }
-
 }
