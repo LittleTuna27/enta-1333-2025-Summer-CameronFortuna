@@ -1,15 +1,15 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
 {
     [Header("AI Settings")]
     [SerializeField] private UnitInstance unitInstance;
     [SerializeField] private float detectionRange = 5f;
-    [SerializeField] private float castleSearchRadius = 2f; // How close to get to castle before attacking
+    [SerializeField] private float castleSearchRadius = 2f; // how close to get to castle before attacking
     [SerializeField] private float playerUnitDetectionRange = 3f;
-    [SerializeField] private float retargetInterval = 1f; // How often to check for new targets
+    [SerializeField] private float retargetInterval = 1f; // how often to check for new targets
 
     [Header("Debug")]
     [SerializeField] private bool showDebugGizmos = true;
@@ -19,7 +19,7 @@ public class EnemyAI : MonoBehaviour
     private Coroutine aiCoroutine;
     private AIState currentAIState = AIState.Idle;
 
-    // AI States
+    //ai states
     public enum AIState
     {
         Idle,
@@ -28,6 +28,8 @@ public class EnemyAI : MonoBehaviour
         AttackingPlayer,
         Searching
     }
+
+    //gets building radius using BuildingHealth or fallback estimate
     private int GetActualBuildingRadius(Vector3 buildingCenter)
     {
         // Try to get the BuildingHealth component to get actual size
@@ -45,6 +47,7 @@ public class EnemyAI : MonoBehaviour
         return EstimateBuildingSize(unitInstance.gridManager.GetGridPositionFromWorld(buildingCenter));
     }
 
+    //estimates building size by scanning grid around it
     private int EstimateBuildingSize(Vector2Int centerGrid)
     {
         GridManager grid = unitInstance.gridManager;
@@ -82,6 +85,7 @@ public class EnemyAI : MonoBehaviour
         return 1; // Default for 1x1 building instead of 2
     }
 
+    //gets all grid nodes in a ring around a position
     private List<GridNode> GetNodesInRing(Vector2Int center, int radius)
     {
         List<GridNode> ringNodes = new List<GridNode>();
@@ -107,6 +111,7 @@ public class EnemyAI : MonoBehaviour
         return ringNodes;
     }
 
+    //checks if enemy is in range to attack a building
     private bool IsInAttackRangeOfBuilding(Vector3 buildingCenter)
     {
         GridManager grid = unitInstance.gridManager;
@@ -135,6 +140,7 @@ public class EnemyAI : MonoBehaviour
     public AIState CurrentAIState => currentAIState;
     public GameObject TargetCastle => targetCastle;
 
+    //sets up ai at start
     private void Start()
     {
         // Get UnitInstance if not assigned
@@ -154,6 +160,7 @@ public class EnemyAI : MonoBehaviour
         StartAI();
     }
 
+    //starts ai when enabled
     private void OnEnable()
     {
         if (unitInstance != null)
@@ -162,11 +169,13 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    //stops ai when disabled
     private void OnDisable()
     {
         StopAI();
     }
 
+    //starts ai behavior loop coroutine
     public void StartAI()
     {
         if (aiCoroutine != null)
@@ -176,6 +185,7 @@ public class EnemyAI : MonoBehaviour
         aiCoroutine = StartCoroutine(AIBehaviorLoop());
     }
 
+    //stops ai behavior loop
     public void StopAI()
     {
         if (aiCoroutine != null)
@@ -185,13 +195,14 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // Method to set the target castle (called by spawners or managers)
+    //sets target castle reference
     public void SetTargetCastle(GameObject castle)
     {
         targetCastle = castle;
         Debug.Log($"{name}: Target castle set to {castle?.name}");
     }
 
+    //main ai behavior loop
     private IEnumerator AIBehaviorLoop()
     {
         while (unitInstance != null && unitInstance.IsAlive)
@@ -200,6 +211,8 @@ public class EnemyAI : MonoBehaviour
             yield return new WaitForSeconds(retargetInterval);
         }
     }
+
+    //updates ai behavior based on priorities
     private void UpdateAIBehavior()
     {
         if (!unitInstance.IsAlive) return;
@@ -261,6 +274,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    //sets new ai state
     private void SetAIState(AIState newState)
     {
         if (currentAIState != newState)
@@ -270,6 +284,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    //finds the nearest player unit in range
     private UnitInstance FindNearestPlayerUnit()
     {
         UnitInstance[] allUnits = FindObjectsOfType<UnitInstance>();
@@ -293,6 +308,7 @@ public class EnemyAI : MonoBehaviour
         return nearestPlayerUnit;
     }
 
+    //moves enemy towards castle
     private void MoveTowardsCastle()
     {
         if (targetCastle == null || unitInstance.gridManager == null)
@@ -341,6 +357,8 @@ public class EnemyAI : MonoBehaviour
             }
         }
     }
+
+    //handles attacking a target (building or unit)
     private void AttackTarget(IDamageable target)
     {
         if (target == null || !target.IsAlive)
@@ -361,6 +379,7 @@ public class EnemyAI : MonoBehaviour
         Debug.Log($"{name}: Attacking {GetTargetName(target)}");
     }
 
+    //searches for a castle or fallback building if none found
     private void SearchForCastle()
     {
         // Look for player castles (buildings with ArmyID different from this unit's ArmyID)
@@ -394,6 +413,7 @@ public class EnemyAI : MonoBehaviour
         Debug.LogWarning($"{name}: No enemy buildings found to target");
     }
 
+    //checks if a building is a castle by name
     private bool IsCastle(string buildingName)
     {
         if (string.IsNullOrEmpty(buildingName)) return false;
@@ -405,6 +425,7 @@ public class EnemyAI : MonoBehaviour
                lowerName.Contains("citadel");
     }
 
+    //gets name of the current target for logs
     private string GetTargetName(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
@@ -418,7 +439,7 @@ public class EnemyAI : MonoBehaviour
         return "Unknown Target";
     }
 
-    // Public method to force retarget (useful for external calls)
+    //forces ai to update behavior
     public void ForceRetarget()
     {
         if (unitInstance != null && unitInstance.IsAlive)
@@ -427,13 +448,13 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // Method to check if unit is currently attacking something
+    //returns if the unit is currently attacking
     public bool IsAttacking()
     {
         return unitInstance != null && unitInstance.AttackTarget != null;
     }
 
-    // Method to get current target position for external reference
+    //returns the current target's position
     public Vector3? GetCurrentTargetPosition()
     {
         if (targetCastle != null)
@@ -442,6 +463,8 @@ public class EnemyAI : MonoBehaviour
         }
         return unitInstance?.GetAttackTargetPosition();
     }
+
+    //finds the nearest enemy building blocking path
     private BuildingHealth FindNearestBlockingBuilding()
     {
         BuildingHealth[] buildings = FindObjectsOfType<BuildingHealth>();

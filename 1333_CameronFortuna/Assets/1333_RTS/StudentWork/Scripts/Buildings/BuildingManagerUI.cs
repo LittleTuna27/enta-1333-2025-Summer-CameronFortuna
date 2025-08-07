@@ -22,27 +22,26 @@ public class BuildingUIManager : MonoBehaviour
 
     [SerializeField] private BuildModeController buildModeController;
 
+    //initialize menu state and set up toggle button
     private void Start()
     {
-        // Initialize menu in hidden position
         buildingMenuPanel.anchoredPosition = menuHiddenPosition;
         isMenuVisible = false;
 
-        // Setup button listener
         if (buildingMenuToggleButton != null)
         {
             buildingMenuToggleButton.onClick.AddListener(ToggleBuildingMenu);
         }
     }
+    //checks for escape key to close the menu
     private void Update()
     {
-        // Close menu with Escape key
         if (Input.GetKeyDown(KeyCode.Escape) && isMenuVisible)
         {
             CloseBuildingMenu();
         }
     }
-
+    //toggles the building menu open or closed
     public void ToggleBuildingMenu()
     {
         if (isMenuVisible)
@@ -54,44 +53,38 @@ public class BuildingUIManager : MonoBehaviour
             OpenBuildingMenu();
         }
     }
+    //opens the building menu and enters build mode
     public void OpenBuildingMenu()
     {
         if (isMenuVisible) return;
 
-
-        // Enter build mode
         if (BuildModeController.Instance != null && !BuildModeController.Instance.IsInBuildMode)
         {
-
             buildModeController.ToggleBuildMode();
         }
 
-        // Animate menu in
         AnimateMenu(menuVisiblePosition, true);
     }
+    //closes the building menu and exits build mode
     public void CloseBuildingMenu()
     {
         if (!isMenuVisible) return;
 
-        // Exit build mode
         if (BuildModeController.Instance != null && BuildModeController.Instance.IsInBuildMode)
         {
-            // Same as above - you'll need to make this accessible
             SendMessage("ToggleBuildMode", SendMessageOptions.DontRequireReceiver);
         }
 
-        // Clear any selected building
         if (BuildingPlacementManager.Instance != null)
         {
             BuildingPlacementManager.Instance.SetActiveBuilding(null);
         }
 
-        // Animate menu out
         AnimateMenu(menuHiddenPosition, false);
     }
+    //starts the menu slide animation
     private void AnimateMenu(Vector2 targetPosition, bool willBeVisible)
     {
-        //SoundPracticePlayer.Instance.PlaySound(1, AudioSourceType.SFX);
         if (currentAnimation != null)
         {
             StopCoroutine(currentAnimation);
@@ -99,6 +92,7 @@ public class BuildingUIManager : MonoBehaviour
 
         currentAnimation = StartCoroutine(SlideMenuCoroutine(targetPosition, willBeVisible));
     }
+    //animates the menu sliding in or out
     private IEnumerator SlideMenuCoroutine(Vector2 targetPosition, bool willBeVisible)
     {
         Vector2 startPosition = buildingMenuPanel.anchoredPosition;

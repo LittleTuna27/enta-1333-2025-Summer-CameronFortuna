@@ -8,12 +8,12 @@ public class SimpleSceneChanger : MonoBehaviour
     public string sceneName;
 
 
-    public static SimpleSceneChanger SoundManager { get; private set; }
+    public static SimpleSceneChanger Scene { get; private set; }
     private void Awake()
     {
-        if (SoundManager == null)
+        if (Scene == null)
         {
-            SoundManager = this;
+            Scene = this;
             DontDestroyOnLoad(gameObject);
         }
     }

@@ -12,39 +12,39 @@ public class DefensiveBuilding : MonoBehaviour
     public UnitInstance CurrentTarget;
 
     [Header("Army Settings")]
-    [SerializeField] private int ArmyID = 0; // Make sure this is set correctly in inspector
+    [SerializeField] private int ArmyID = 0; // set in inspector to determine team
 
     private float lastAttackTime = 0.0f;
     private List<UnitInstance> unitsInRange = new List<UnitInstance>();
     private SphereCollider rangeCollider;
     private bool isActive = false;
 
+    //called on start, sets tower layer
     void Start()
     {
-        // Set this building to the DefensiveBuildings layer
         gameObject.layer = LayerMask.NameToLayer("DefensiveBuildings");
         Debug.Log($"Tower {gameObject.name} set to layer: {gameObject.layer}");
     }
+
+    //main update loop for checking targets and attacking
     void Update()
     {
-        // Only operate if the building is active
         if (!isActive) return;
 
-        // Clean up null references in unitsInRange
         unitsInRange.RemoveAll(unit => unit == null);
 
-        // Find a target if we don't have one
         if (CurrentTarget == null)
         {
             FindNearestTarget();
         }
 
-        // Attack current target if we have one
         if (CurrentTarget != null)
         {
             AttackCurrentTarget();
         }
     }
+
+    //called when the building is placed in the world
     public void OnBuildingPlaced()
     {
         isActive = true;
@@ -52,21 +52,22 @@ public class DefensiveBuilding : MonoBehaviour
         Debug.Log($"Defensive building {gameObject.name} has been placed and activated");
         Debug.Log($"Tower ArmyID: {ArmyID}, Attack Range: {attackRange}, Damage: {towerDamage}");
     }
+
+    //sets up the trigger collider for detecting enemies
     public void SetupRangeCollider()
     {
-        // Create or get the range collider
         rangeCollider = GetComponent<SphereCollider>();
         if (rangeCollider == null)
         {
             rangeCollider = gameObject.AddComponent<SphereCollider>();
         }
 
-        // Configure as trigger with specified range
         rangeCollider.isTrigger = true;
         rangeCollider.radius = attackRange;
-
         Debug.Log($"Tower range collider set up with radius: {attackRange}");
     }
+
+    //called when a unit enters tower range
     public void OnTriggerEnter(Collider other)
     {
         if (!isActive) return;
@@ -84,7 +85,6 @@ public class DefensiveBuilding : MonoBehaviour
                 unitsInRange.Add(unit);
                 Debug.Log($"Unit {unit.name} entered tower range (Enemy unit detected!)");
 
-                // If we don't have a target, set this as our target
                 if (CurrentTarget == null)
                 {
                     SetTarget(unit);
@@ -100,6 +100,8 @@ public class DefensiveBuilding : MonoBehaviour
             Debug.Log($"No UnitInstance component found on {other.name}");
         }
     }
+
+    //called when a unit leaves tower range
     public void OnTriggerExit(Collider other)
     {
         UnitInstance unit = other.GetComponent<UnitInstance>();
@@ -108,18 +110,21 @@ public class DefensiveBuilding : MonoBehaviour
             unitsInRange.Remove(unit);
             Debug.Log($"Unit {unit.name} left tower range");
 
-            // If this was our current target, clear it
             if (CurrentTarget == unit)
             {
                 ClearTarget();
             }
         }
     }
+
+    //sets the current target for the tower
     public void SetTarget(UnitInstance unit)
     {
         CurrentTarget = unit;
         Debug.Log($"Tower targeting: {unit.name}");
     }
+
+    //clears the current target
     public void ClearTarget()
     {
         if (CurrentTarget != null)
@@ -128,6 +133,8 @@ public class DefensiveBuilding : MonoBehaviour
         }
         CurrentTarget = null;
     }
+
+    //finds the nearest enemy unit to target
     public void FindNearestTarget()
     {
         if (unitsInRange.Count == 0) return;
@@ -152,15 +159,10 @@ public class DefensiveBuilding : MonoBehaviour
             SetTarget(nearestUnit);
         }
     }
+
+    //handles attacking the current target
     public void AttackCurrentTarget()
     {
-        // Check if target still exists
-        if (CurrentTarget == null)
-        {
-            Debug.Log("No current target");
-            return;
-        }
-
         // Check if enough time has passed since last attack
         if (Time.time < lastAttackTime + attackCooldown)
         {
@@ -198,3 +200,4 @@ public class DefensiveBuilding : MonoBehaviour
         }
     }
 }
+

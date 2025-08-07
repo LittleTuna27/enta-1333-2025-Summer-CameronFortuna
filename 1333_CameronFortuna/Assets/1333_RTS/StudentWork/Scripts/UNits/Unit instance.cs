@@ -12,7 +12,7 @@ public class UnitInstance : UnitBase, IDamageable
     [SerializeField] private DamageFlash damageFlash;
 
     [Header("Army Settings")]
-    [SerializeField] private int armyID = 0; // The army this unit belongs to
+    [SerializeField] private int armyID = 0; // the army this unit belongs to
     private CurrentTeamArmyManager armyManager;
 
     public GridManager gridManager;
@@ -32,18 +32,18 @@ public class UnitInstance : UnitBase, IDamageable
     public GridNode currentNodeUnitON;
 
     [Header("Combat Settings")]
-    [SerializeField] private float attackCooldown = 2f; // Attack every 2 seconds
+    [SerializeField] private float attackCooldown = 2f; // attack every 2 seconds
     private float lastAttackTime = 0f;
 
-    // Properties to get values from UnitType
+    // properties to get values from UnitType
     public int AttackDamage => unitType?.Damage ?? 0;
     public int MaxHealth => unitType?.MaxHp ?? 100;
     public int Defense => unitType?.Defence ?? 0;
     public int AttackRange => unitType?.Range ?? 1;
 
-    // REFACTORED: Use IDamageable interface for flexible targeting
+    // attack target management
     public IDamageable AttackTarget { get; private set; }
-    public UnitBase CurrentTarget; // Keep for backward compatibility
+    public UnitBase CurrentTarget; // legacy compatibility
     public int currentHealth;
     public int CurrentHealth => currentHealth;
     public bool IsAlive => currentHealth > 0;
@@ -51,7 +51,7 @@ public class UnitInstance : UnitBase, IDamageable
     [Header("UI References")]
     [SerializeField] private Slider healthSlider;
 
-    //showing the state the unit is in
+    // return unit position in world space
     public Vector3 GetPosition()
     {
         return transform.position;
@@ -64,18 +64,15 @@ public class UnitInstance : UnitBase, IDamageable
         {
             if (_state != value)
             {
-                //Debug.Log($"{name} state changed from {_state} to {value}");
                 _state = value;
-
-                // Update animator based on state
                 UpdateAnimator();
             }
         }
     }
 
+    // called on start to register unit and set health
     private void Start()
     {
-        //register this unit to the selection manager if present
         if (UnitSelectionManager.Instance != null)
         {
             UnitSelectionManager.Instance.allUnitsList.Add(this);
@@ -88,12 +85,14 @@ public class UnitInstance : UnitBase, IDamageable
         InitializeHealth();
     }
 
+    // initialize unit health and health bar
     private void InitializeHealth()
     {
         currentHealth = MaxHealth;
         InitializeHealthBar();
     }
 
+    // update loop for movement and combat
     private void Update()
     {
         if (state == UnitState.Moving)
@@ -104,31 +103,28 @@ public class UnitInstance : UnitBase, IDamageable
         Attackmode();
     }
 
+    // setup unit instance with pathfinder, type, grid, and army id
     public void Initialize(AStartPathfinding pathfinder, UnitType unitType, GridManager grid, int armyID)
     {
         this.pathfinder = pathfinder;
         this.unitType = unitType ?? ScriptableObject.CreateInstance<UnitType>();
         gridManager = grid;
         this.armyID = armyID;
-
-        // Initialize health based on UnitType
         currentHealth = MaxHealth;
-
-        // Find the army manager for this army ID
         FindArmyManager();
 
-        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, MoveSpeed: {this.unitType?.MoveSpeed}, " +
-                  $"Health: {currentHealth}/{MaxHealth}, Damage: {AttackDamage}, Defense: {Defense}, ArmyID: {this.armyID}");
+        Debug.Log($"Unit {name} initialized - UnitType: {this.unitType?.name}, " +
+                  $"MoveSpeed: {this.unitType?.MoveSpeed}, Health: {currentHealth}/{MaxHealth}, " +
+                  $"Damage: {AttackDamage}, Defense: {Defense}, ArmyID: {this.armyID}");
 
-        //reference check
         if (this.pathfinder == null) Debug.LogError($"{name}: pathfinder is null!");
         if (this.unitType == null) Debug.LogError($"{name}: unitType is null!");
         if (gridManager == null) Debug.LogError($"{name}: gridManager is null!");
     }
 
+    // find matching army manager for this unit
     private void FindArmyManager()
     {
-        // Find the army manager that matches this unit's army ID
         CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
         foreach (var manager in managers)
         {
@@ -141,25 +137,23 @@ public class UnitInstance : UnitBase, IDamageable
 
         if (armyManager == null)
         {
-            Debug.LogWarning($"{name}: Could not find army manager for Army ID {armyID}");
+            Debug.LogWarning($"{name}: could not find army manager for Army ID {armyID}");
         }
     }
-    //telling the unit to move to a certain node
-    //handling getting the nodes and call pathfinding and visualizer to get the math and draw the path
+
+    // move unit to target node using pathfinding
     public override void MoveTo(GridNode targetNode)
     {
-       
         GridNode startNode = gridManager.GetNodeFromWorldPosition(transform.position);
 
-        // If the target node is not walkable, find the nearest walkable one
         if (targetNode != null && (!targetNode.walkable || targetNode.IsOccupied))
-            {
-            Debug.Log($"{name}: Target node is blocked, finding nearest walkable node");
+        {
+            Debug.Log($"{name}: target node is blocked, finding nearest walkable node");
             targetNode = gridManager.GetNearestWalkableNode(targetNode.WorldPosition);
 
             if (targetNode == null)
             {
-                Debug.LogWarning($"{name}: Could not find any walkable node near target");
+                Debug.LogWarning($"{name}: could not find any walkable node near target");
                 state = UnitState.Idle;
                 return;
             }
@@ -176,7 +170,6 @@ public class UnitInstance : UnitBase, IDamageable
             currentPath = null;
         }
 
-        //start movement path traversal if there is a path
         if (currentPath != null && currentPath.Count > 0)
         {
             StartPathMovement(currentPath);
@@ -189,7 +182,7 @@ public class UnitInstance : UnitBase, IDamageable
         }
     }
 
-    //reset the path and movement counters to start walking
+    // start following a new path
     public void StartPathMovement(List<GridNode> path)
     {
         currentPath = path;
@@ -200,7 +193,7 @@ public class UnitInstance : UnitBase, IDamageable
         Debug.Log($"{name} is beginning movement along path with {path?.Count ?? 0} nodes.");
     }
 
-    //for each frame while moving to progress along the path
+    // handle frame-by-frame path movement
     public override void DoMove()
     {
         if (!isMoving || currentPath == null || pathIndex >= currentPath.Count)
@@ -213,7 +206,7 @@ public class UnitInstance : UnitBase, IDamageable
             }
             return;
         }
-        //setting the target movement node to the indexed node and setting the units speed based of its type
+
         Vector3 target = currentPath[pathIndex].WorldPosition + Vector3.up * 0.5f;
         float moveSpeed = unitType.MoveSpeed;
 
@@ -224,14 +217,13 @@ public class UnitInstance : UnitBase, IDamageable
             state = UnitState.Idle;
             return;
         }
-        //moving towards the target and increasing the index as it gets close to the square
+
         transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, target) < 0.1f)
         {
             pathIndex++;
-            //Debug.Log($"{name} reached waypoint {pathIndex}/{currentPath.Count}");
         }
-        //once the unit reaches the end of the list stop moving
+
         if (pathIndex >= currentPath.Count)
         {
             isMoving = false;
@@ -240,7 +232,7 @@ public class UnitInstance : UnitBase, IDamageable
         }
     }
 
-    //selecting the unit
+    // visually mark unit as selected
     public void Select()
     {
         if (unitSkin != null)
@@ -250,7 +242,7 @@ public class UnitInstance : UnitBase, IDamageable
         Debug.Log($"{name} selected.");
     }
 
-    //deselecting the unit
+    // visually mark unit as deselected
     public void Deselect()
     {
         if (unitSkin != null)
@@ -260,22 +252,24 @@ public class UnitInstance : UnitBase, IDamageable
         Debug.Log($"{name} deselected.");
     }
 
-    // Enhanced attack target management
+    // assign a new attack target
     public void SetAttackTarget(IDamageable target)
     {
         AttackTarget = target;
 
-        // Stop movement when we set an attack target
         if (target != null && state == UnitState.Moving)
         {
             StopMovement();
         }
     }
 
+    // clear the current attack target
     public void ClearAttackTarget()
     {
         AttackTarget = null;
     }
+
+    // find transform of attack target
     private Transform GetTargetTransform(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
@@ -289,11 +283,11 @@ public class UnitInstance : UnitBase, IDamageable
         return null;
     }
 
+    // find best attack position for a building
     private GridNode FindBestAttackPositionForBuilding(Vector3 buildingCenter)
     {
         Vector2Int centerGrid = gridManager.GetGridPositionFromWorld(buildingCenter);
 
-        // Try to get actual building size
         BuildingHealth building = null;
         Collider buildingCollider = Physics.OverlapSphere(buildingCenter, 0.1f)
             ?.FirstOrDefault()?.GetComponent<Collider>();
@@ -302,12 +296,11 @@ public class UnitInstance : UnitBase, IDamageable
             building = buildingCollider.GetComponent<BuildingHealth>();
         }
 
-        int buildingRadius = building != null ? building.GetBuildingRadius() : 2; // Default to 4x4 if unknown
+        int buildingRadius = building != null ? building.GetBuildingRadius() : 2;
         int attackRange = AttackRange;
 
         List<GridNode> attackPositions = new List<GridNode>();
 
-        // Find all positions within attack range of the building
         for (int x = -buildingRadius - attackRange; x <= buildingRadius + attackRange; x++)
         {
             for (int y = -buildingRadius - attackRange; y <= buildingRadius + attackRange; y++)
@@ -317,7 +310,6 @@ public class UnitInstance : UnitBase, IDamageable
 
                 if (node != null && node.walkable && !node.IsOccupied)
                 {
-                    // Check if this position can attack the building
                     int deltaX = Mathf.Max(0, Mathf.Abs(x) - buildingRadius);
                     int deltaY = Mathf.Max(0, Mathf.Abs(y) - buildingRadius);
                     int distanceToBuilding = deltaX + deltaY;
@@ -332,7 +324,6 @@ public class UnitInstance : UnitBase, IDamageable
 
         if (attackPositions.Count == 0) return null;
 
-        // Sort by distance to our current position
         Vector3 ourPosition = transform.position;
         attackPositions.Sort((a, b) =>
         {
@@ -344,12 +335,11 @@ public class UnitInstance : UnitBase, IDamageable
         return attackPositions[0];
     }
 
+    // handle attacking logic each frame
     public void Attackmode()
     {
-        // Check if we have a specific attack target
         if (AttackTarget != null)
         {
-            // Check if target is still valid (not destroyed)
             Transform targetTransform = GetTargetTransform(AttackTarget);
             if (targetTransform == null || !AttackTarget.IsAlive)
             {
@@ -357,22 +347,17 @@ public class UnitInstance : UnitBase, IDamageable
                 return;
             }
 
-            // Use building-aware attack range check
             bool inAttackRange = IsInAttackRangeOfBuilding(AttackTarget);
 
             if (inAttackRange)
             {
-                // Target is in range - we should be in attacking state
                 state = UnitState.Attacking;
 
-                // STOP MOVEMENT - Very important for buildings!
                 if (isMoving)
                 {
                     StopMovement();
-                    //Debug.Log($"{name}: Stopped movement to attack building");
                 }
 
-                // Check if enough time has passed since last attack
                 if (Time.time >= lastAttackTime + attackCooldown)
                 {
                     PerformAttack(AttackTarget);
@@ -381,10 +366,8 @@ public class UnitInstance : UnitBase, IDamageable
             }
             else
             {
-                // Target is out of range, move closer only if not already moving
                 if (state != UnitState.Moving)
                 {
-                    // For buildings, try to find the best attack position
                     BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
                     if (building != null)
                     {
@@ -392,17 +375,16 @@ public class UnitInstance : UnitBase, IDamageable
                         if (targetNode != null)
                         {
                             MoveTo(targetNode);
-                            Debug.Log($"{name}: Moving to attack position for building");
+                            Debug.Log($"{name}: moving to attack position for building");
                         }
                         else
                         {
-                            Debug.LogWarning($"{name}: Cannot find attack position for building");
+                            Debug.LogWarning($"{name}: cannot find attack position for building");
                             ClearAttackTarget();
                         }
                     }
                     else
                     {
-                        // For units, use nearest walkable node
                         GridNode targetNode = gridManager.GetNearestWalkableNode(targetTransform.position);
                         if (targetNode != null)
                         {
@@ -410,7 +392,7 @@ public class UnitInstance : UnitBase, IDamageable
                         }
                         else
                         {
-                            Debug.LogWarning($"{name}: Cannot find walkable path to target during attack mode");
+                            Debug.LogWarning($"{name}: cannot find walkable path to target during attack mode");
                             ClearAttackTarget();
                         }
                     }
@@ -419,7 +401,6 @@ public class UnitInstance : UnitBase, IDamageable
         }
         else
         {
-            // NO TARGET - Stop attacking!
             if (state == UnitState.Attacking)
             {
                 state = UnitState.Idle;
@@ -427,24 +408,20 @@ public class UnitInstance : UnitBase, IDamageable
         }
     }
 
+    // perform an attack on a target
     private void PerformAttack(IDamageable target)
     {
         if (target == null) return;
 
         string targetName = GetTargetName(target);
-        //Debug.Log($"{name} attacks {targetName} for {AttackDamage} damage!");
-
-        // Deal damage
         target.TakeDamage(AttackDamage, gameObject);
 
-        // If target died, clear it
         if (!target.IsAlive)
         {
             if (AttackTarget == target)
             {
                 ClearAttackTarget();
             }
-            // Clear legacy target if it's the same
             if (target is UnitBase unitTarget && CurrentTarget == unitTarget)
             {
                 CurrentTarget = null;
@@ -452,6 +429,8 @@ public class UnitInstance : UnitBase, IDamageable
             state = UnitState.Idle;
         }
     }
+
+    // get target name for logs
     private string GetTargetName(IDamageable target)
     {
         if (target is MonoBehaviour monoBehaviour)
@@ -465,12 +444,11 @@ public class UnitInstance : UnitBase, IDamageable
         return "Unknown Target";
     }
 
+    // apply damage and update health
     public void TakeDamage(int damage, GameObject attacker = null)
     {
         if (!IsAlive) return;
 
-
-        // Calculate actual damage after defense
         int actualDamage = Mathf.Max(1, damage - Defense);
         int oldHealth = currentHealth;
         currentHealth = Mathf.Max(0, currentHealth - actualDamage);
@@ -480,15 +458,15 @@ public class UnitInstance : UnitBase, IDamageable
 
         Debug.Log($"{name} took {actualDamage} damage from {(attacker != null ? attacker.name : "unknown")}. Health: {currentHealth}/{MaxHealth}");
 
-        // Check if unit died
         if (currentHealth <= 0 && oldHealth > 0)
         {
             Die();
         }
     }
+
+    // handle unit death cleanup
     public void Die()
     {
-        // Clear any attack targets pointing to this unit
         UnitInstance[] allUnits = FindObjectsOfType<UnitInstance>();
         foreach (var unit in allUnits)
         {
@@ -501,35 +479,34 @@ public class UnitInstance : UnitBase, IDamageable
                 unit.CurrentTarget = null;
             }
         }
-        // Remove from selection if selected
+
         if (UnitSelectionManager.Instance.selectedUnits.Contains(this))
         {
             UnitSelectionManager.Instance.selectedUnits.Remove(this);
         }
-        // Remove from army manager
+
         if (armyManager != null)
         {
             armyManager.currentlyActiveUnits.Remove(this);
         }
 
-        // Remove from all units list
         if (UnitSelectionManager.Instance.allUnitsList.Contains(this))
         {
             UnitSelectionManager.Instance.allUnitsList.Remove(this);
         }
 
-        Destroy(gameObject, 0.5f); // Small delay for effects
+        Destroy(gameObject, 0.5f);
     }
+
+    // update animator with current state
     private void UpdateAnimator()
     {
         if (animator == null) return;
 
-        // Reset movement and idle states
         animator.SetBool("IsMoving", false);
         animator.SetBool("IsAttacking", false);
         animator.SetBool("IsIdle", false);
 
-        // Set the appropriate state
         switch (_state)
         {
             case UnitState.Moving:
@@ -543,15 +520,19 @@ public class UnitInstance : UnitBase, IDamageable
                 break;
         }
     }
+
+    // setup health bar values
     private void InitializeHealthBar()
     {
         if (healthSlider != null)
         {
             healthSlider.maxValue = MaxHealth;
             healthSlider.value = currentHealth;
-            healthSlider.interactable = false; // Players can't drag it
+            healthSlider.interactable = false;
         }
     }
+
+    // update health bar ui
     private void UpdateHealthBar()
     {
         if (healthSlider != null)
@@ -559,35 +540,30 @@ public class UnitInstance : UnitBase, IDamageable
             healthSlider.value = currentHealth;
         }
     }
+
+    // stop all unit movement
     public void StopMovement()
     {
-        // Clear the current path
         if (CurrentPath != null)
         {
             CurrentPath.Clear();
         }
 
-        // Set state to idle if currently moving
         if (state == UnitState.Moving)
         {
             state = UnitState.Idle;
         }
 
-        // Stop any movement coroutines if they exist
-        // Note: Adjust this based on your actual movement implementation
         StopAllCoroutines();
-
-        //Debug.Log($"{name}: Movement stopped");
     }
 
-
-    // Method to check if unit should stop moving when attacking
+    // check if movement should stop for attack
     public bool ShouldStopMovementForAttack()
     {
         return AttackTarget != null && state == UnitState.Moving;
     }
 
-    // Get current target position for AI calculations
+    // get attack target position
     public Vector3? GetAttackTargetPosition()
     {
         if (AttackTarget != null)
@@ -596,35 +572,29 @@ public class UnitInstance : UnitBase, IDamageable
         }
         return null;
     }
+
+    // check if target is in attack range
     private bool IsInAttackRangeOfBuilding(IDamageable target)
     {
         Transform targetTransform = GetTargetTransform(target);
         if (targetTransform == null) return false;
 
-        // Check if target is a building
         BuildingHealth building = targetTransform.GetComponent<BuildingHealth>();
         if (building != null)
         {
             Vector2Int ourGrid = gridManager.GetGridPositionFromWorld(transform.position);
             Vector2Int buildingGrid = gridManager.GetGridPositionFromWorld(targetTransform.position);
 
-            // Use actual building size
             int buildingRadius = building.GetBuildingRadius();
 
-            // Calculate distance to building edge
             int deltaX = Mathf.Max(0, Mathf.Abs(ourGrid.x - buildingGrid.x) - buildingRadius);
             int deltaY = Mathf.Max(0, Mathf.Abs(ourGrid.y - buildingGrid.y) - buildingRadius);
             int distanceToEdge = deltaX + deltaY;
 
-            bool inRange = distanceToEdge <= AttackRange;
-
-            //Debug.Log($"{name}: Building attack check - Distance to edge: {distanceToEdge}, Attack range: {AttackRange}, In range: {inRange}, Building size: {building.BuildingSize}");
-
-            return inRange;
+            return distanceToEdge <= AttackRange;
         }
         else
         {
-            // For regular units, use simple distance
             float distance = Vector3.Distance(transform.position, targetTransform.position);
             return distance <= AttackRange;
         }

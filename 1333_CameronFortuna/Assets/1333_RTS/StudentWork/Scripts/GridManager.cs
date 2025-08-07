@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GridManager : MonoBehaviour
 {
-
     [SerializeField] private GridSettings gridSettings;
     [SerializeField] private TerrainType defaultTerrainType;
     [SerializeField] private List<TerrainType> terrainTypes = new();
@@ -19,6 +17,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private List<GridNode> allNodes = new();
     public bool IsInitialized { get; private set; } = false;
 
+    // inittializes grid at the start
     void Awake()
     {
         if (!IsInitialized)
@@ -27,7 +26,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-
+    //builds the grid of nodes based on settings and terrain
     public void InitializeGrid()
     {
         gridNodes = new GridNode[gridSettings.GridSizeX, gridSettings.GridSizeY];
@@ -57,9 +56,11 @@ public class GridManager : MonoBehaviour
                 allNodes.Add(node);
             }
         }
-        
+
         IsInitialized = true;
     }
+
+    //draws the grid in the editor using Gizmos
     private void OnDrawGizmos()
     {
         if (gridNodes == null || gridSettings == null) return;
@@ -77,6 +78,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    //gives the node at the given grid coordinates
     public GridNode GetNode(int x, int y)
     {
         if (x >= 0 && x < gridSettings.GridSizeX && y >= 0 && y < gridSettings.GridSizeY)
@@ -84,8 +86,10 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
+    //returns a list of all nodes in the grid
     public List<GridNode> GetAllNodes() => allNodes;
 
+    //returns the 4 neighboring nodes (up, down, left, right)
     public List<GridNode> GetNeighborNodes(GridNode node)
     {
         List<GridNode> neighbors = new();
@@ -96,7 +100,7 @@ public class GridManager : MonoBehaviour
 
         foreach (var dir in directions)
         {
-            Vector3 checkPos = node.WorldPosition + new Vector3(dir.x, 0, dir.z) *  nodeSize;
+            Vector3 checkPos = node.WorldPosition + new Vector3(dir.x, 0, dir.z) * nodeSize;
             GridNode neighbor = GetNodeFromWorldPosition(checkPos);
             if (neighbor != null) neighbors.Add(neighbor);
         }
@@ -104,6 +108,7 @@ public class GridManager : MonoBehaviour
         return neighbors;
     }
 
+    //finds the node at a given world position
     public GridNode GetNodeFromWorldPosition(Vector3 position)
     {
         int x = gridSettings.UseXZPlane
@@ -119,6 +124,7 @@ public class GridManager : MonoBehaviour
 
         return GetNode(x, y);
     }
+    //converts a world position into grid coordinates
     public Vector2Int GetGridPositionFromWorld(Vector3 worldPosition)
     {
         int x = gridSettings.UseXZPlane
@@ -131,22 +137,23 @@ public class GridManager : MonoBehaviour
 
         return new Vector2Int(x, y);
     }
+    //finds the nearest walkable node from a given position
     public GridNode GetNearestWalkableNode(Vector3 position, int maxSearchRadius = 10)
     {
         GridNode originNode = GetNodeFromWorldPosition(position);
 
-        // If we can't even get a node at this position, expand search immediately
+        // If no node found at position, search nearby
         if (originNode == null)
         {
             Debug.LogWarning($"GetNearestWalkableNode: No node found at position {position}");
             return FindWalkableNodeInArea(position, maxSearchRadius);
         }
 
-        // If the origin node is walkable and not occupied, return it
+        // If node is already good, return it
         if (originNode.walkable && !originNode.IsOccupied)
             return originNode;
 
-        // BFS to find nearest walkable node
+        // Breadth-first search to expand outward
         Queue<GridNode> open = new Queue<GridNode>();
         HashSet<GridNode> visited = new HashSet<GridNode>();
 
@@ -159,7 +166,6 @@ public class GridManager : MonoBehaviour
             int currentLevelSize = open.Count;
             searchRadius++;
 
-            // Process all nodes at current radius level
             for (int i = 0; i < currentLevelSize; i++)
             {
                 GridNode current = open.Dequeue();
@@ -170,14 +176,12 @@ public class GridManager : MonoBehaviour
                     {
                         visited.Add(neighbor);
 
-                        // Check if this neighbor is walkable
                         if (neighbor.walkable && !neighbor.IsOccupied)
                         {
                             Debug.Log($"Found walkable node at distance {searchRadius} from {position}");
                             return neighbor;
                         }
 
-                        // Add to queue for next level search
                         open.Enqueue(neighbor);
                     }
                 }
@@ -187,17 +191,15 @@ public class GridManager : MonoBehaviour
         Debug.LogWarning($"GetNearestWalkableNode: No walkable node found within {maxSearchRadius} radius of {position}");
         return null;
     }
+    //expands out in a square search to find a walkable node
     private GridNode FindWalkableNodeInArea(Vector3 centerPosition, int maxRadius)
     {
-        // Search in expanding squares around the center position
         for (int radius = 1; radius <= maxRadius; radius++)
         {
-            // Check all positions in the current radius
             for (int x = -radius; x <= radius; x++)
             {
                 for (int z = -radius; z <= radius; z++)
                 {
-                    // Skip positions we've already checked in smaller radii
                     if (Mathf.Abs(x) < radius && Mathf.Abs(z) < radius)
                         continue;
 
@@ -215,8 +217,7 @@ public class GridManager : MonoBehaviour
 
         return null;
     }
-
-    // Method to get all nodes occupied by a building (useful for debugging)
+    //returns all nodes that a building would cover at a given position
     public List<GridNode> GetNodesInArea(Vector3 centerPosition, int width, int height)
     {
         List<GridNode> nodes = new List<GridNode>();

@@ -16,6 +16,7 @@ public class EnemyAIManager : MonoBehaviour
 
     public static EnemyAIManager Instance { get; private set; }
 
+    //singleton setup
     private void Awake()
     {
         if (Instance == null)
@@ -29,6 +30,7 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //initializes manager and finds player castle
     private void Start()
     {
         if (autoFindCastle && playerCastle == null)
@@ -40,6 +42,7 @@ public class EnemyAIManager : MonoBehaviour
         RegisterExistingEnemies();
     }
 
+    //updates manager logic and triggers retargeting
     private void Update()
     {
         // Periodically force all enemies to retarget
@@ -53,6 +56,7 @@ public class EnemyAIManager : MonoBehaviour
         CleanupDestroyedEnemies();
     }
 
+    //sets player castle reference
     public void SetPlayerCastle(GameObject castle)
     {
         playerCastle = castle;
@@ -62,6 +66,7 @@ public class EnemyAIManager : MonoBehaviour
         UpdateAllEnemiesCastleTarget();
     }
 
+    //registers a new enemy with the manager
     public void RegisterEnemy(EnemyAI enemy)
     {
         if (enemy != null && !managedEnemies.Contains(enemy))
@@ -78,6 +83,7 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //unregisters an enemy from the manager
     public void UnregisterEnemy(EnemyAI enemy)
     {
         if (managedEnemies.Contains(enemy))
@@ -87,6 +93,7 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //registers all existing enemies at start
     private void RegisterExistingEnemies()
     {
         EnemyAI[] existingEnemies = FindObjectsOfType<EnemyAI>();
@@ -96,6 +103,7 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //finds the player's castle automatically
     private void FindPlayerCastle()
     {
         // Look for buildings with army ID 0 (typically player) that contain "castle" in the name
@@ -119,6 +127,7 @@ public class EnemyAIManager : MonoBehaviour
         Debug.LogWarning("EnemyAIManager: Could not auto-find player castle");
     }
 
+    //updates all enemies with the current castle target
     private void UpdateAllEnemiesCastleTarget()
     {
         foreach (var enemy in managedEnemies)
@@ -130,6 +139,7 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //forces all enemies to update their targeting
     private void ForceGlobalRetarget()
     {
         int activeEnemies = 0;
@@ -148,24 +158,27 @@ public class EnemyAIManager : MonoBehaviour
         }
     }
 
+    //removes destroyed enemies from the list
     private void CleanupDestroyedEnemies()
     {
         managedEnemies.RemoveAll(enemy => enemy == null);
     }
 
-    // Public methods for external systems
+    //returns number of active enemies
     public int GetManagedEnemyCount()
     {
         CleanupDestroyedEnemies();
         return managedEnemies.Count;
     }
 
+    //returns list of active enemies
     public List<EnemyAI> GetActiveEnemies()
     {
         CleanupDestroyedEnemies();
         return new List<EnemyAI>(managedEnemies);
     }
 
+    //returns number of enemies attacking castle
     public int GetEnemiesAttackingCastle()
     {
         int count = 0;
@@ -179,6 +192,7 @@ public class EnemyAIManager : MonoBehaviour
         return count;
     }
 
+    //returns number of enemies moving to castle
     public int GetEnemiesMovingToCastle()
     {
         int count = 0;
@@ -192,6 +206,7 @@ public class EnemyAIManager : MonoBehaviour
         return count;
     }
 
+    //draws debug gizmos in scene view
     private void OnDrawGizmos()
     {
         if (!showDebugInfo) return;

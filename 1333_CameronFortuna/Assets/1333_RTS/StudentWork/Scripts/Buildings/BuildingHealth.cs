@@ -27,16 +27,16 @@ public class BuildingHealth : MonoBehaviour, IDamageable
     [SerializeField] private float destroyDelay = 0.5f;
 
     [Header("Building Dimensions")]
-    [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // Width x Height in grid units
-    [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // Offset from center if needed
+    [SerializeField] private Vector2Int buildingSize = new Vector2Int(4, 4); // width x height in grid units
+    [SerializeField] private Vector2Int buildingOffset = Vector2Int.zero; // offset from center if needed
 
-    // Grid tracking variables - these need to be set when the building is placed
+    //grid tracking variables - these need to be set when the building is placed
     private Vector2Int buildingOrigin;
     private Vector2Int occupiedGridNode;
     private GridManager gridManager;
     private bool isDead = false;
 
-    // IDamageable interface properties
+    //idamageable interface properties
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
     public bool IsAlive => currentHealth > 0;
@@ -44,20 +44,22 @@ public class BuildingHealth : MonoBehaviour, IDamageable
     public int ArmyID => armyID;
     public CurrentTeamArmyManager ArmyManager => armyManager;
 
-    // Additional properties
+    //additional properties
     public bool IsDestroyed => currentHealth <= 0 || isDead;
     public string BuildingName => buildingData?.BuildingName ?? "Unknown Building";
 
-    // Public getter for other scripts
+    //public getter for other scripts
     public Vector2Int BuildingSize => buildingSize;
     public Vector2Int BuildingOffset => buildingOffset;
 
+    //called when the building is first created
     private void Start()
     {
         currentHealth = MaxHealth;
         InitializeBuilding();
     }
 
+    //sets up the building's health, army manager, grid manager, and health bar
     private void InitializeBuilding()
     {
         currentHealth = maxHealth;
@@ -68,6 +70,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         Debug.Log($"Building {BuildingName} initialized - Health: {currentHealth}/{maxHealth}, Defense: {defense}, ArmyID: {armyID}");
     }
 
+    //finds the army manager for this building's army id
     private void FindArmyManager()
     {
         CurrentTeamArmyManager[] managers = FindObjectsOfType<CurrentTeamArmyManager>();
@@ -86,6 +89,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         }
     }
 
+    //finds the grid manager in the scene
     private void FindGridManager()
     {
         gridManager = FindObjectOfType<GridManager>();
@@ -95,7 +99,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         }
     }
 
-    // Method to set grid occupation data when building is placed
+    //sets grid occupation data when building is placed
     public void SetGridOccupationData(Vector2Int origin, Vector2Int dimensions, GridManager manager)
     {
         buildingOrigin = origin;
@@ -105,12 +109,11 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         Debug.Log($"{BuildingName} grid data set - Origin: {buildingOrigin}, Dimensions: {occupiedGridNode}");
     }
 
-    // IDamageable interface methods
+    //applies damage to the building and checks if it is destroyed
     public void TakeDamage(int damage, GameObject attacker = null)
     {
         if (IsDestroyed) return;
 
-        // Calculate actual damage after defense
         int actualDamage = Mathf.Max(1, damage - defense);
         int oldHealth = currentHealth;
         currentHealth = Mathf.Max(0, currentHealth - actualDamage);
@@ -120,42 +123,37 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         OnHealthChanged?.Invoke(currentHealth);
 
         string attackerName = attacker != null ? attacker.name : "unknown";
-        //Debug.Log($"{BuildingName} took {actualDamage} damage from {attackerName}. Health: {currentHealth}/{maxHealth}");
 
-        // Check if building was destroyed
         if (currentHealth <= 0 && oldHealth > 0)
         {
             Die();
         }
     }
 
+    //handles the building's destruction logic
     public void Die()
     {
         if (isDead) return;
 
         isDead = true;
 
-        // Remove from army manager if assigned
         if (armyManager != null)
         {
-            // Remove from any building lists the army manager might have
             Debug.Log($"{BuildingName} removed from Army {armyID}");
         }
 
-        // Clear grid occupation 
         ClearGridOccupation();
-
         OnBuildingDestroyed?.Invoke();
 
         Debug.Log($"{BuildingName} has been destroyed!");
 
-        // Destroy the building GameObject if enabled
         if (destroyOnZeroHealth)
         {
             Destroy(gameObject, destroyDelay);
         }
     }
 
+    //clears the grid nodes occupied by this building
     private void ClearGridOccupation()
     {
         if (gridManager == null)
@@ -164,10 +162,8 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             return;
         }
 
-        // If we don't have the grid data set, try to calculate it from current position
         if (occupiedGridNode == Vector2Int.zero)
         {
-            // Fall back to using buildingSize and calculating origin from current position
             Vector2Int currentGridPos = gridManager.GetGridPositionFromWorld(transform.position);
             buildingOrigin = new Vector2Int(
                 currentGridPos.x - buildingSize.x / 2,
@@ -178,7 +174,6 @@ public class BuildingHealth : MonoBehaviour, IDamageable
             Debug.LogWarning($"{BuildingName}: Grid data not set, using fallback calculation. Origin: {buildingOrigin}, Size: {occupiedGridNode}");
         }
 
-        // Update grid occupancy using the stored dimensions
         for (int x = 0; x < occupiedGridNode.x; x++)
         {
             for (int y = 0; y < occupiedGridNode.y; y++)
@@ -200,11 +195,13 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         Debug.Log($"{BuildingName}: Successfully cleared {occupiedGridNode.x}x{occupiedGridNode.y} grid area starting at {buildingOrigin}");
     }
 
+    //returns the world position of this building
     public Vector3 GetPosition()
     {
         return transform.position;
     }
 
+    //sets up the building's health bar
     private void InitializeHealthBar()
     {
         if (healthBar != null)
@@ -213,6 +210,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         }
     }
 
+    //updates the building's health bar with the current health
     private void UpdateHealthBar()
     {
         if (healthBar != null)
@@ -221,7 +219,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         }
     }
 
-    // Method to get the radius (distance from center to edge)
+    //returns the radius of the building in grid units
     public int GetBuildingRadius()
     {
         return Mathf.Max(
@@ -230,7 +228,7 @@ public class BuildingHealth : MonoBehaviour, IDamageable
         );
     }
 
-    // Method to check if a grid position is occupied by this building
+    //checks if the building occupies a specific grid position
     public bool OccupiesGridPosition(Vector2Int gridPos, Vector2Int buildingCenter)
     {
         Vector2Int halfSize = new Vector2Int(
